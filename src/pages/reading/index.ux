@@ -1,0 +1,638 @@
+<template>
+  <div class="wrapper" style="backgroundColor: {{BGC}};">
+    <stack>
+      <!-- 书内容 -->
+      <div class="contentBox" @click="openSetting">
+        <text
+          style="fontSize: {{fontSize}}px;color: {{fontColor}};letter-spacing: {{letterSpacing}}px"
+          >{{ content }}</text
+        >
+        <!-- 页面底部end -->
+      </div>
+      <!-- 书内容end -->
+      <!-- 页面底部 -->
+      <div class="bottom">
+        <div class="hot">
+          <text class="icon">&#xe641;</text>
+          <text>213123</text>
+        </div>
+        <text>0%</text>
+        <div class="applicationName">
+          <text>谷雨阅读</text>
+        </div>
+      </div>
+      <!-- 加桌 -->
+      <div class="addDesk" @click="addDesk">
+        <image
+          style="width: 90%"
+          src="../../assets/images/addDesk.svg"
+          alt=""
+        />
+      </div>
+      <!-- 加桌end -->
+      <my-popup id="popupBottom" position="bottom" title="购买章节">
+        <div slot="default" class="buyChapter">
+          <text class="buyItemC chapterNum">第10章 睡了就跑</text>
+          <div class="buyItemC shubi">
+            <text class="money">51</text><text>书币</text>
+          </div>
+          <div class="hasC buyItemC topB">
+            <text class="left">书币余额</text>
+            <text class="right">0书币</text>
+          </div>
+          <div class="hasC buyItemC bottomB">
+            <text class="title">自动购买</text>
+            <text
+              class="icon {{isAutoBuy ? 'active' : ''}}"
+              @click="autoBuyFn"
+              >{{ $app.unescapeIconCode(isAutoBuyIcon) }}</text
+            >
+          </div>
+          <input class="buyButton" type="button" value="书币余额不足，去充值" />
+        </div>
+      </my-popup>
+
+      <!-- 菜单 -->
+      <my-popup id="popupSetting" position="bottom" @close="settingClose">
+        <div slot="default" class="settingBox">
+          <div class="chapter" if="{{bottomIconActive == 0}}">
+            <div class="left">
+              <text class="icon" @click="previousChapter">&#xe628;上一章</text>
+            </div>
+            <div class="center">
+              <text>{{ currentChapterName }}</text>
+            </div>
+            <div class="right" @click="nextChapter">
+              <text>下一章</text>
+              <text class="icon">&#xe628;</text>
+            </div>
+          </div>
+          <div class="details" if="{{bottomIconActive == 0}}">
+            <text @click="goDetails">查看详情</text>
+          </div>
+
+          <div class="light" if="{{bottomIconActive == 2}}">
+            <text>亮度</text>
+            <my-slider
+              class="slider"
+              @change="changeLightNum"
+              min="{{0}}"
+              max="{{255}}"
+              styleObject="{{sliderStyle}}"
+            ></my-slider>
+            <!-- <div class="ieye">
+              <text>护眼模式</text>
+              <text class="icon">&#xe640;</text>
+            </div> -->
+          </div>
+          <div class="bgBox" if="{{bottomIconActive == 2}}">
+            <text>背景</text>
+            <div
+              for="v in bgcList"
+              class="button {{BGC == v ? 'active' : ''}}"
+              style="backgroundColor: {{v}}"
+              @click="changeBG(v)"
+              type="button"
+            ></div>
+          </div>
+
+          <div class="fontSize" if="{{bottomIconActive == 3}}">
+            <text>字号</text>
+            <my-slider
+              class="slider"
+              @change="changeFontSize"
+              defaultValue="{{fontSize}}"
+              styleObject="{{sliderStyle}}"
+              min="{{32}}"
+              max="{{100}}"
+            ></my-slider>
+            <div class="ieye">
+              <text>系统字体</text>
+              <text class="icon">&#xe640;</text>
+            </div>
+          </div>
+          <div class="fontMargin" if="{{bottomIconActive == 3}}">
+            <text>间距</text>
+            <my-slider
+              class="slider"
+              onafter-change="changeFontSpacing"
+              defaultValue="{{letterSpacing}}"
+              styleObject="{{sliderStyle}}"
+            ></my-slider>
+          </div>
+          <div class="set">
+            <text
+              class="icon {{bottomIconActive == 0 ? 'active': ''}}"
+              @click="changeReadSet('0')"
+              >{{ $app.unescapeIconCode(bottomChapterIcon) }}</text
+            >
+            <text class="icon" @click="changeReadSet('1')">{{
+              $app.unescapeIconCode(bottomNightIcon)
+            }}</text>
+            <text
+              class="icon {{bottomIconActive == 2 ? 'active': ''}}"
+              @click="changeReadSet('2')"
+              >{{ $app.unescapeIconCode(bottomLightIcon) }}</text
+            >
+            <text
+              class="icon {{bottomIconActive == 3 ? 'active': ''}}"
+              @click="changeReadSet('3')"
+              >{{ $app.unescapeIconCode(bottomFont) }}</text
+            >
+          </div>
+        </div>
+      </my-popup>
+      <div
+        style="display: {{bookshelfmallshow ? 'block' : 'none'}}"
+        class="bookshelf"
+        @click="toBookshelf"
+      >
+        <text class="icon">&#xe61a;</text>
+      </div>
+      <div
+        style="display: {{bookshelfmallshow ? 'block' : 'none'}}"
+        class="bookmall"
+        @click="toBookmall"
+      >
+        <text class="icon">&#xe61e;</text>
+      </div>
+    </stack>
+  </div>
+</template>
+<import name="my-popup" src="apex-ui/components/popup/index"></import>
+<import name="my-button" src="apex-ui/components/button/index"></import>
+<import name="my-checkbox" src="apex-ui/components/checkbox/index"></import>
+<import name="my-slider" src="apex-ui/components/slider/index"></import>
+<script>
+import fetch from '@system.fetch'
+import { getChapterContent } from '../../common/api/book'
+import { getAddBrowseRecord } from '../../common/api/bookshelf'
+import cipher from '@system.cipher'
+import { cipherKey } from '../../conf/cipherKey'
+import router from '@system.router'
+import storage from '@system.storage'
+import brightness from '@system.brightness'
+export default {
+  private: {
+    bgcList: ['rgb(77,77,77)', 'rgb(209, 255, 250)', 'rgb(255, 239, 160)', 'rgb(231, 231, 231)'],
+    letterSpacing: '',
+    fontSize: 32,
+    fontColor: '#333',
+    currentChapterName: '',
+    BGC: 'rgb(231, 231, 231)',
+    checked: false,
+    isAutoBuy: false,
+    isAutoBuyIcon: '&#xe636;',
+    bookshelfmallshow: false,
+    bottomChapterIcon: '&#xe639;',
+    bottomNightIcon: '&#xe63e;',
+    bottomLightIcon: '&#xe63d;',
+    bottomFont: '&#xe638;',
+    isNight: false,
+    bottomIconActive: 0,
+    sliderStyle: {
+      flex: 1,
+      width: '100%'
+    },
+    content: ``,
+    bookInfo: {},
+    currentChapterId: '',
+    nextChapterId: '',
+    previousChapterId: '',
+    bookId: '',
+    iv: '',
+    key: ''
+  },
+  // 设置字间距
+  changeFontSpacing(e) {
+    this.letterSpacing = e.detail.currentValue;
+    console.log(this.letterSpacing);
+    storage.set({
+      key: 'letterSpacing',
+      value: this.letterSpacing
+    })
+  },
+  // 设置字体大小
+  changeFontSize(e) {
+    this.fontSize = e.detail.currentValue;
+    storage.set({
+      key: 'readPageFS',
+      value: this.fontSize
+    })
+  },
+  // 查看详情
+  goDetails() {
+    router.push({
+      uri: 'pages/bookDetail',
+      params: {
+        bookId: this.bookId,
+        bookInfo: this.bookInfo,
+        currentChapterId: this.currentChapterId
+      }
+    })
+  },
+  // 上一章
+  previousChapter() {
+    if (this.previousChapterId == 0) return;
+    this.getChapterContent(this.previousChapterId, 'init')
+  },
+  // 下一章
+  nextChapter() {
+    this.getChapterContent(this.nextChapterId)
+  },
+  // 滑动到底部，加载下一章
+  onReachBottom() {
+    this.nextChapter()
+  },
+  // 选择背景
+  changeBG(c) {
+    if (c == this.bgcList[0]) {
+      this.fontColor = '#efefef'
+    } else {
+      this.fontColor = '#333'
+    }
+    storage.set({
+      key: 'readPageBG',
+      value: c
+    })
+    storage.set({
+      key: 'readPageFC',
+      value: this.fontColor
+    })
+    this.BGC = c;
+  },
+  onInit(pageParams) {
+    console.log(this.$app.userInfo, 'this.$app.userInfo');
+    const _self = this;
+    // 设置缓存样式
+    storage.get({
+      key: 'readPageBG',
+      success(v) {
+        _self.BGC = v
+        console.log(_self.BGC);
+      }
+    })
+    storage.get({
+      key: 'readPageFS',
+      success(v) {
+        _self.fontSize = v || 32
+      }
+    })
+    storage.get({
+      key: 'readPageFC',
+      success(v) {
+        _self.fontColor = v
+      }
+    })
+    storage.get({
+      key: 'letterSpacing',
+      success(v) {
+        _self.letterSpacing = v
+      }
+    })
+    // 
+    this.bookInfo = JSON.parse(pageParams.bookInfo)
+    this.bookId = pageParams.book_id;
+    this.currentChapterId = pageParams.chapter_id
+    //解码key和iv去解码内容
+    Promise.all([this.cipherFn({
+      key: cipherKey,
+      iv: cipherKey,
+      content: this.bookInfo.iv
+    }), this.cipherFn({
+      key: cipherKey,
+      iv: cipherKey,
+      content: this.bookInfo.key
+    })]).then((a) => {
+      this.key = a[1];
+      this.iv = a[0]
+      this.getChapterContent(pageParams.chapter_id, 'init')
+    }, (rej) => {
+      console.log(rej);
+    });
+    // 加入浏览记录
+    if (this.$app.userInfo.mobile || this.$app.userInfo.is_fee) {//如果用户手机号登录或者已充值
+      getAddBrowseRecord({
+        uid: this.$app.userInfo.id,
+        book_id: this.bookId,
+        chapter_id: this.currentChapterId,
+      }).then(e => {
+      })
+    } else {
+      storage.get({
+        key: 'browserecordList',
+        success(v) {
+          browserecordList = v ? JSON.parse(v) : []
+          browserecordList.push(_self.bookInfo)
+          storage.set({
+            key: 'browserecordList',
+            value: browserecordList
+          })
+        }
+      })
+    }
+  },
+  // 调整亮度
+  changeLightNum(e) {
+    brightness.setValue({
+      value: e.detail.currentValue,
+      success: function () {
+        console.log('handling success')
+      },
+      fail: function (data, code) {
+        console.log(`handling fail, code = ${code}`)
+      }
+    })
+  },
+  cipherFn(obj) {
+    //解密：
+    return new Promise((res, rej) => {      cipher.aes({
+        action: 'decrypt',
+        //待解密的内容，是base64编码后的一段二进制值
+        text: obj.content,
+        //base64编码后的密钥
+        key: obj.key,
+        transformation: 'AES/CBC/PKCS5Padding',
+        ivOffset: 0,
+        ivLen: 16,
+        iv: obj.iv,
+        success: data => {
+          res(data.text)
+        },
+        fail: (data, code) => {
+          rej({ data, code })
+        }
+      })
+    })
+  },
+  // 获取章节内容
+  getChapterContent(chapter_id, evtype) {
+    getChapterContent({
+      book_id: this.bookId,
+      chapter_id: chapter_id
+    }).then(bookObj => {
+      this.nextChapterId = bookObj.next_id;
+      this.previousChapterId = bookObj.pre_id
+      this.currentChapterName = bookObj.name;
+      this.cipherFn({
+        key: this.key,
+        iv: this.iv,
+        content: bookObj.content
+      }).then(e => {
+        if (evtype == 'init') {
+          this.content = `\r\n${bookObj.name}\r\n\r\n${e}`
+        } else {
+          this.content += `\r\n${bookObj.name}\r\n\r\n${e}`
+        }
+      })
+    })
+  },
+  settingClose() {
+    this.bookshelfmallshow = false;
+  },
+  // 点击底部设置tabbar
+  changeReadSet(i) {
+    // 夜晚模式与白天模式切换
+    if (i == 1) {
+      this.isNight = !this.isNight;
+      this.bottomNightIcon = this.isNight ? '&#xe63e;' : '&#xe63c;'
+      return;
+    }
+    this.bottomIconActive = i;
+  },
+  // 跳转到书架
+  toBookshelf() {
+  },
+  // 跳转到书城
+  toBookmall() {
+  },
+  // 打开底部设置
+  openSetting() {
+    this.$child('popupSetting').show()
+    this.bookshelfmallshow = true;
+  },
+  handleAnimalChange({ detail }) {
+    this.checked = detail.current;
+  },
+  // 加桌
+  addDesk() {
+    this.$child('popupBottom').show()
+  },
+  autoBuyFn() {
+    this.isAutoBuy = !this.isAutoBuy
+    this.isAutoBuyIcon = this.isAutoBuy ? '&#xe632' : '&#xe636;'
+  },
+  buy() {
+  },
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+@hotH: 80px;
+@byyH: 360px;
+.slider {
+  flex: 1;
+}
+.fontSize {
+  width: 100%;
+}
+.fontMargin {
+  width: 100%;
+}
+.bgBox {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  div {
+    width: 66px;
+    height: 66px;
+    border-radius: 66px;
+  }
+  .active {
+    border: 4px solid @blue;
+  }
+  .bg1 {
+    background-color: rgb(243, 75, 75);
+  }
+  .bg2 {
+    background-color: rgb(212, 183, 89);
+  }
+  .bg3 {
+    background-color: rgb(139, 251, 242);
+  }
+  .bg4 {
+    background-color: rgb(92, 126, 240);
+  }
+}
+.light {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+  .ieye {
+    height: 72px;
+    background-color: rgba(238, 238, 238, 0.5);
+    width: 260px;
+    display: flex;
+    justify-content: center;
+    border-radius: 70px;
+    .icon {
+      font-size: 52px;
+    }
+  }
+}
+.bookshelf {
+  bottom: @byyH + 20;
+}
+.bookmall {
+  bottom: @byyH + 160;
+}
+.bookshelf,
+.bookmall {
+  width: 120px;
+  height: 120px;
+  border-radius: 120px;
+  background-color: @blue;
+  position: fixed;
+  right: 20px;
+  display: none;
+  text {
+    color: white;
+    font-size: 56px;
+    text-align: center;
+    width: 100%;
+  }
+}
+.settingBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: @byyH;
+  padding: 50px 20px;
+  .details {
+    width: 86%;
+    margin: 0 auto;
+    height: 76px;
+    border-radius: 76px;
+    border: 1px solid #ccc;
+    text {
+      text-align: center;
+      width: 100%;
+    }
+  }
+  .chapter {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    .right {
+      .icon {
+        transform: rotate(180deg);
+      }
+    }
+  }
+  .set {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    .active {
+      color: @blue;
+    }
+    .icon {
+      font-size: 42px;
+    }
+  }
+}
+.autoBuyCheckbox {
+  color: @blue;
+}
+.buyButton {
+  width: 90%;
+  color: white;
+  background-color: @blue;
+  border-radius: 76px;
+  height: 76px;
+  font-size: 28px;
+  margin: 30px auto;
+}
+.buyChapter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+  margin: 0 auto;
+  .shubi {
+    text {
+      color: @orange;
+    }
+    .money {
+      font-size: 56px;
+    }
+  }
+  .chapterNum {
+    font-weight: bold;
+    color: #333;
+    font-size: 36px;
+    margin-bottom: 20px;
+  }
+  .buyItemC {
+    margin: 10px auto;
+  }
+  .topB {
+    border-top: 1px solid #eaeaea;
+    padding-top: 30px;
+    padding-bottom: 10px;
+  }
+  .bottomB {
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 30px;
+    .icon {
+      font-size: 46px;
+    }
+    .active {
+      color: @blue;
+    }
+  }
+  .hasC {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+.addDesk {
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  width: 100%;
+  bottom: 150;
+  display: none;
+  image {
+    width: 90%;
+  }
+}
+.bottom {
+  display: flex;
+  justify-content: space-around;
+  background-color: transparent;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: @hotH;
+  text {
+    color: #bbb;
+  }
+  .hot {
+    text {
+      color: red;
+    }
+  }
+}
+.contentBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: @hotH;
+  padding: 0 20px;
+}
+</style>

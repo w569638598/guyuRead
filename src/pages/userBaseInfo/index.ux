@@ -1,0 +1,72 @@
+<template>
+  <div class="userBaseInfoPage">
+    <div class="list">
+      <lflist obj="{{$item}}" for="{{flist}}">
+
+      </lflist>
+    </div>
+  </div>
+</template>
+<import name="lflist" src="../../components/lfList.ux"></import>
+<script>
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    flist: [
+      {
+        text: '编辑头像',
+        right: {
+          imgUrl: '/assets/images/profilePicture.svg'
+        }
+      },
+      {
+        text: '昵称',
+        right: {
+          icon: '&#xe628;',
+          text: "大神"
+        }
+      },
+      {
+        text: '性别',
+        right: {
+          icon: '&#xe628;',
+          text: '男'
+        }
+      },
+      {
+        text: '绑定账号',
+        right: {
+          text: "前往绑定",
+          btn: true
+        }
+      },
+      {
+        text: '我的阅读偏好',
+        right: {
+          icon: '&#xe628;',
+          text: '男频'
+        }
+      },
+    ],
+  },
+
+  onInit() { }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.userBaseInfoPage {
+    align-items: center;
+  background-color: @pageBC;
+  .flexC();
+  .list {
+    .flexC();
+    width: 90%;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+}
+</style>

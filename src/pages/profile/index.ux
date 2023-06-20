@@ -1,0 +1,292 @@
+<template>
+  <div class="profilePage">
+    <stack class="header">
+      <div class="headerContent">
+        <div class="userInfoBox">
+          <div class="ProfilePicture">
+            <image src="/assets/images/profilePicture.svg"></image>
+          </div>
+          <div class="userInfo">
+            <text class="name" @click="goPage('login')">用户{{userInfo.id}}</text>
+            <text class="discript">暂无简介</text>
+          </div>
+        </div>
+        <div class="userVIPInfoBox">
+          <div class="left">
+            <text class="icon">&#xe62b;VIP会员</text>
+            <text class="VIPDiscript">豪华专享特权 x 付费书籍特权备份</text>
+          </div>
+          <div class="right" @click="goPage('activeVIP')">
+            <text class="text">立即开通</text>
+            <text class="icon">&#xe628;</text>
+          </div>
+        </div>
+      </div>
+    </stack>
+    <!-- info-end -->
+    <div class="speciesBox">
+      <div class="left">
+        <div class="item one">
+          <text class="species">0</text>
+          <text class="text">我的书币</text>
+        </div>
+        <div class="item one">
+          <text class="species">0</text>
+          <text class="text">我的书券</text>
+        </div>
+      </div>
+      <text class="recharge" @click="goPage('voucherCenter')">充值</text>
+    </div>
+    <!-- money -->
+    <div class="aboutMoneyBox">
+      <div class="type" @click="goPage('rechargeRecord')">
+        <image src="/assets/images/buyRecord.svg"></image>
+        <text>充值记录</text>
+      </div>
+      <div class="type" @click="goPage('activityCenter')">
+        <image src="/assets/images/moveCenter.svg"></image>
+        <text>活动中心</text>
+      </div>
+      <div class="type" @click="goPage('sign')">
+        <image src="/assets/images/sign.svg"></image>
+        <text>签到有礼</text>
+      </div>
+      <div class="type" @click="goPage('myAccount')">
+        <image src="/assets/images/myAccount.svg"></image>
+        <text>我的账户</text>
+      </div>
+    </div>
+    <!-- money -->
+    <div class="listBox">
+      <div class="item" @click="goPage('set')">
+        <div class="left">
+          <text class="icon">&#xe62f;</text>
+          <text class="text">关于设置</text>
+        </div>
+        <text class="right icon">&#xe628;</text>
+      </div>
+      <div class="item">
+        <div class="left">
+          <text class="icon">&#xe624;</text>
+          <text class="text">联系客服</text>
+        </div>
+        <text class="right icon">&#xe628;</text>
+      </div>
+      <div class="item" @click="goPage('aboutus')">
+        <div class="left">
+          <text class="icon">&#xe625;</text>
+          <text class="text">关于我们</text>
+        </div>
+        <text class="right icon">&#xe628;</text>
+      </div>
+      <div class="item">
+        <div class="left">
+          <text class="icon">&#xe62c;</text>
+          <text class="text">帮助与反馈</text>
+        </div>
+        <text class="right icon">&#xe628;</text>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import cipher from '@system.cipher'
+import fetch from '@system.fetch'
+import router from '@system.router'
+import storage from '@system.storage'
+export default {
+  data: {
+    userInfo: {}
+  },
+  goPage(url){
+    router.push({
+      uri: 'pages/' + url
+    })
+  },
+  onInit() {
+    const _self = this;
+    storage.get({
+      key: 'user',
+      success: function(e){
+        if(e){
+          _self.userInfo  = JSON.parse(e);
+        }
+      }
+    })
+  },
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+@pcw: 90%;
+.BR10() {
+  border-radius: 10px;
+}
+.listBox {
+  background-color: #ffffff;
+  .BR10();
+  .flexC();
+  width: @pcw;
+  margin-top: 20px;
+  padding: 30px 40px;
+  .left {
+    .icon {
+      margin-right: 8px;
+    }
+  }
+  text {
+    color: #333;
+  }
+  .right {
+    transform: rotate(180deg);
+  }
+  .item {
+    height: 52px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-between;
+  }
+}
+.aboutMoneyBox {
+  display: flex;
+  justify-content: space-around;
+  width: @pcw;
+  height: 152px;
+  background-color: white;
+  margin-top: 20px;
+  align-items: center;
+  .BR10();
+  .type {
+    .flexC();
+    align-items: center;
+    text {
+      color: #333;
+      margin-top: 6px;
+    }
+    image {
+      width: 40px;
+    }
+  }
+}
+.speciesBox {
+  background-color: white;
+  .BR10();
+  width: @pcw;
+  display: flex;
+  justify-content: space-between;
+  height: 130px;
+  margin-top: 20px;
+  align-items: center;
+  padding: 0 30px;
+  .recharge {
+    color: white;
+    background-color: @blue;
+    width: 108px;
+    height: 50px;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 28px;
+  }
+  .left {
+    display: flex;
+    justify-content: space-around;
+    .item {
+      margin: 0 20px;
+      .species {
+        font-size: 36px;
+        color: #333;
+      }
+      .flexC();
+      align-items: center;
+    }
+  }
+}
+.profilePage {
+  background-color: @pageBC;
+  .flexC();
+  width: 100%;
+  min-height: 100%;
+  align-items: center;
+}
+.header {
+  background: linear-gradient(#3e6be4, #1d39c4);
+  height: 420px;
+  width: 100%;
+  .headerContent {
+    padding-top: 50px;
+
+    display: flex;
+    align-items: center;
+    width: 100%;
+    .flexC();
+  }
+
+  .userInfoBox {
+    width: @pcw;
+    height: 132px;
+    .ProfilePicture {
+      width: 132px;
+      height: 100%;
+      image {
+        width: 100%;
+        height: 100%;
+      }
+    }
+    .userInfo {
+      .flexC();
+      margin-left: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .name {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    .discript {
+      color: rgba(255, 255, 255, 0.57);
+      font-size: 26px;
+    }
+    text {
+      color: white;
+    }
+  }
+  .userVIPInfoBox {
+    width: @pcw;
+    height: 202px;
+    background: linear-gradient(#fee2b2, #fdcd79);
+    border-radius: 30px;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 20px;
+    bottom: -60px;
+    left: 7%;
+    padding-top: 40px;
+    padding-left: 30px;
+    .left {
+      .flexC();
+      .icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+      }
+    }
+    .right {
+      font-size: 28px;
+      margin-top: 20px;
+      margin-right: 20px;
+      .icon {
+        transform: rotate(180deg);
+      }
+    }
+    .VIPDiscript {
+      font-size: 26px;
+    }
+    text {
+      color: #ab6010;
+    }
+  }
+}
+</style>

@@ -1,0 +1,194 @@
+<template>
+  <div class="voucherCenterPage">
+    <div class="account">
+      <text class="title">账户余额</text>
+      <div class="balance">
+        <div class="item">
+          <text class="num">0</text>
+          <text class="text">我的书币</text>
+        </div>
+        <div class="item">
+          <text class="num">0</text>
+          <text class="text">我的书券</text>
+        </div>
+      </div>
+    </div>
+    <!-- 账户end -->
+    <div class="voucherModul">
+      <div class="title">
+        <text class="text">充值金额</text>
+        <text class="disc">(1元=100书币)</text>
+      </div>
+      <div class="module">
+        <div
+          class="item {{$idx%2 == 1 ? 'odd' : ''}} {{activeVoucherIndex == $idx ? 'active': ''}}"
+          for="{{6}}"
+          @click="changeVoucherM($idx)"
+        >
+          <div class="moneyBox">
+            <text class="str">￥</text>
+            <text class="money">50</text>
+          </div>
+          <div class="species">
+            <text class="one">1000书币</text>
+            <text class="two fc-b">+2000书券</text>
+          </div>
+          <text class="tag">返回</text>
+        </div>
+      </div>
+    </div>
+    <!-- 支付方式 -->
+    <payType></payType>
+    <!-- tip -->
+    <div class="tipBox">
+      <text class="title">温馨提示：</text>
+      <text class="text">
+        1.充值后获得的书币和书券仅限本平台使用;
+        2.充值的书币永久有效,但赠送的书券有效期为7天,过期后自动失效(消费时优先扣除距离过期时间最近的书券);
+        3.虚拟商品购买后不可退换;
+        4.未满18周岁的未成年人应在法定监护人同意后进行充值;
+        5.充值会员前请阅读<span class="fc-b">《会员服务协议》</span>
+        6.充值遇到问题，请联系客服。
+      </text>
+    </div>
+  </div>
+</template>
+<import name="payType" src="../../components/payType.ux"></import>
+<script>
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    activeVoucherIndex: 0,
+  },
+
+  onInit() { },
+  changeVoucherM(i) {
+    this.activeVoucherIndex = i;
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.tipBox {
+  margin-top: 50px;
+  .flexC();
+  .title {
+    .titleS();
+    margin-bottom: 20px;
+  }
+}
+
+.payType {
+  margin-top: 50px;
+  .typeBox {
+    display: flex;
+    justify-content: space-around;
+    .item {
+      width: 324px;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #000000;
+      border-radius: 10px;
+    }
+  }
+  .flexC();
+  .title {
+    .titleS();
+    margin-bottom: 20px;
+  }
+}
+.voucherModul {
+  .module {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    .item {
+      width: 324px;
+      height: 172px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin: 10px;
+      .flexC();
+      padding-left: 30px;
+      justify-content: center;
+      position: relative;
+      .tag {
+        position: absolute;
+        right: -10px;
+        top: -10px;
+        color: white;
+        background-color: @red;
+        font-size: 22px;
+        padding: 20px 20px 10px 10px;
+        border-radius: 10px;
+      }
+      text {
+        color: #333;
+      }
+      .fc-b {
+        color: @blue;
+      }
+      .moneyBox {
+        margin-bottom: 10px;
+        .money {
+          font-size: 50px;
+        }
+      }
+      .species {
+        font-size: 26px;
+      }
+    }
+    .active {
+      border: 6px solid @blue;
+    }
+  }
+  margin-top: 50px;
+  .flexC();
+  .title {
+    .text {
+      .titleS();
+    }
+    .disc {
+      font-size: 26px;
+      color: #aaa;
+    }
+  }
+}
+.account {
+  .title {
+    margin-bottom: 30px;
+  }
+  background: linear-gradient(to right, #3e6be4, #1d39c4);
+  border-radius: 10px;
+  height: 220px;
+  .flexC();
+  align-items: center;
+  justify-content: center;
+  .balance {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    .item {
+      .flexC();
+      .num {
+        font-size: 50px;
+        .text {
+          font-size: 26px;
+        }
+      }
+      align-items: center;
+    }
+  }
+  text {
+    color: white;
+  }
+}
+.voucherCenterPage {
+  background-color: white;
+  padding: 20px;
+  .flexC();
+}
+</style>

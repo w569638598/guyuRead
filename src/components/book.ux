@@ -1,0 +1,124 @@
+<template>
+  <div class="book">
+    <div class="img">
+      <image src="{{item.cover}}"></image>
+      <text if="{{item.type}}" class="type">{{ item.type }}</text>
+      <text if="{{item.progress}}" class="progress">{{ item.progress }}</text>
+    </div>
+
+    <div class="info">
+      <div class="infoText">
+        <text class="Bname">{{ item.book_name }}</text>
+        <text class="Pname">{{ item.brief }}</text>
+        <div class="bottomText">
+          <text class="left">{{ item.bottomLeft }}</text>
+          <text class="right" style="color: {{item.brc}}">{{
+            item.bottomRight
+          }}</text>
+        </div>
+      </div>
+      <text @click="delBook" class="icon" if="{{isedit}}">&#xe61d;</text>
+    </div>
+  </div>
+</template>
+
+<script>
+// import { baseUrl } from '../conf/server.js'
+export default {
+  data: {
+    title: "Hello World. Quickapp Component.",
+  },
+
+  props: ['item', 'isedit', 'index'],
+  onInit() {
+  },
+  delBook(evt) {
+    // this.$emit('delBook', { index: this.index})
+    evt.stopPropagation()
+    this.$dispatch('delBookForShelf', { index: this.index })
+  },
+}
+</script>
+
+<style lang='less'>
+@import './../assets/styles/style.less';
+.book {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  background-color: white;
+  padding: 20px;
+  height: 240px;
+  width: 100%;
+  border-radius: 10px;
+  .img {
+    width: 160px;
+    height: 200px;
+    .editIcon {
+      width: 46px;
+      height: 46px;
+      right: 0px;
+      top: 0px;
+    }
+  }
+  .info {
+    display: flex;
+    flex: 1;
+    margin-left: 20px;
+    padding: 10px;
+    .infoText {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .icon {
+      font-family: iconfont;
+      color: red;
+      font-size: 62px;
+      padding-right: 10px;
+    }
+    .Bname {
+      font-size: 36px;
+      color: #000000;
+      margin-bottom: 10px;
+      lines: 1;
+      text-overflow: ellipsis;
+    }
+    .Pname {
+      lines: 2;
+      text-overflow: ellipsis;
+    }
+    .bottomText {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      text {
+        font-size: 26px;
+      }
+    }
+  }
+  image {
+    width: 100%;
+    height: 100%;
+  }
+  .type,
+  .progress,
+  .editIcon {
+    position: absolute;
+    font-size: 26px;
+  }
+  .type {
+    background-color: @red;
+    top: 0px;
+    left: 0;
+    color: white;
+    padding: 3px 9px;
+  }
+  .progress {
+    bottom: 0px;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    width: 100%;
+  }
+}
+</style>

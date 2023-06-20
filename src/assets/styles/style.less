@@ -1,0 +1,46 @@
+@import './variables.less';
+@import './mixins.less';
+
+/* 在线链接服务仅供平台体验和调试使用，平台不承诺服务的稳定性，企业客户需下载字体包自行发布使用并做好备份。 */
+@font-face {
+  font-family: 'iconfont';
+  /* Project id 4069926 */
+  src: url('../styles/iconfont.ttf');
+}
+
+.icon {
+  font-family: iconfont;
+}
+
+.fc-o {
+  color: @orange;
+}
+
+.fc-b {
+  color: @blue;
+}
+
+.fc-3 {
+  color: #333;
+}
+.fs-36{
+  font-size: 36px;
+}
+.fs-26{
+  font-size: 26px;;
+}
+.fs-b{
+  font-weight: bold;
+}
+@pageBC: #f0f0f0;
+
+.flexC() {
+  display: flex;
+  flex-direction: column;
+}
+
+.titleS() {
+  font-size: 40px;
+  font-weight: bold;
+  color: #333;
+}

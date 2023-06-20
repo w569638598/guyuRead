@@ -1,0 +1,162 @@
+<template>
+  <div class="activeVIPPage">
+    <image class="VIPHead" src="/assets/images/activeVIP.svg"></image>
+    <!-- . -->
+    <div class="VIPPrivilegeMain">
+      <div class="type">
+        <image src="/assets/images/avtiveVIP/1.svg"></image>
+        <text>阅读免广告</text>
+      </div>
+      <div class="type">
+        <image src="/assets/images/avtiveVIP/2.svg"></image>
+        <text>尊贵标识</text>
+      </div>
+      <div class="type">
+        <image src="/assets/images/avtiveVIP/3.svg"></image>
+        <text>免费畅读</text>
+      </div>
+      <div class="type">
+        <image src="/assets/images/avtiveVIP/4.svg"></image>
+        <text>专属客服</text>
+      </div>
+    </div>
+    <!--  -->
+    <div class="taocMain">
+      <text class="title">选择套餐</text>
+      <div class="taocBox">
+        <div class="topMoney">
+          <div class="moneyBox">
+            <text class="str">￥</text>
+            <text class="money">399</text>
+          </div>
+          <text class="disc">全年免费看书</text>
+        </div>
+        <text class="bottom">书城小说免费阅读一整年</text>
+      </div>
+    </div>
+    <!--  -->
+    <!-- 支付方式 -->
+    <payType width="90%"></payType>
+    <!--  -->
+    <!-- payBtn -->
+    <text class="payBtn">确认开通</text>
+  </div>
+</template>
+<import name="payType" src="../../components/payType.ux"></import>
+ 
+<script>
+export default {
+  private: {
+    title: '欢迎体验快应用开发'
+  },
+
+  onInit() { }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+@pcw: 90%;
+@vipb: #242c48;
+.taocMain {
+  .flexC();
+  width: @pcw;
+  .martT5();
+  .title {
+    .titleS();
+    margin-bottom: 20px;
+  }
+}
+.payBtn {
+  width: @pcw;
+  height: 88px;
+  color: #ffe6ba;
+  text-align: center;
+  background-color: @vipb;
+  border-radius: 88px;
+  margin-top: 150px;
+}
+.payType {
+  margin-top: 50px;
+  .typeBox {
+    display: flex;
+    justify-content: space-around;
+    .item {
+      width: 324px;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #000000;
+      border-radius: 10px;
+    }
+  }
+  .flexC();
+  .title {
+    .titleS();
+    margin-bottom: 20px;
+  }
+}
+.martT5() {
+  margin-top: 50px;
+}
+.taocBox {
+  height: 172px;
+  border: 2px solid @vipb;
+  .BR10();
+  .flexC();
+  .topMoney {
+    background-color: @vipb;
+    padding-left: 30px;
+    height: 130px;
+    justify-content: center;
+    .str {
+      font-size: 26px;
+    }
+    .money {
+      font-size: 46px;
+    }
+    .flexC();
+    text {
+      color: #ffe6ba;
+    }
+  }
+  .bottom {
+    padding-left: 30px;
+    color: @red;
+    font-size: 26px;
+  }
+}
+.VIPHead {
+  width: 100%;
+}
+.activeVIPPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.BR10() {
+  border-radius: 10px;
+}
+.VIPPrivilegeMain {
+  display: flex;
+  justify-content: space-around;
+  width: @pcw;
+  height: 152px;
+  background-color: white;
+  .martT5();
+  align-items: center;
+  .BR10();
+  .type {
+    .flexC();
+    align-items: center;
+    text {
+      color: #333;
+      margin-top: 6px;
+    }
+    image {
+      width: 76px;
+    }
+  }
+}
+</style>

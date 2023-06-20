@@ -1,0 +1,282 @@
+<template>
+  <!-- template里只能有一个根节点 -->
+  <div class="bookDetailsPage">
+    <div class="head">
+      <div class="img">
+        <image src="{{bookInfo.cover}}"></image>
+      </div>
+      <div class="info">
+        <text class="bookName">{{ bookInfo.book_name }}</text>
+        <text class="author">作者：{{ bookInfo.author }}</text>
+        <text class="des"
+          >{{ bookInfo.category_name }} | {{ bookInfo.words }}万字 |
+          {{ bookInfo.status == 1 ? '已完结' : '连载中' }}</text
+        >
+      </div>
+    </div>
+    <div class="bookDes">
+      <div class="descript">
+        <text class="title">书籍简介</text>
+        <text class="text">{{ bookInfo.brief }}</text>
+      </div>
+      <div class="directory">
+        <text class="title">书籍目录</text>
+        <div class="news">
+          <text class="iconNew">NEW</text>
+          <text class="text">最新章节：{{ bookInfo.last_chapter_name }}</text>
+        </div>
+        <div class="directoryList" for="{{chapterList}}" @click="goRead($item)">
+          <text class="text">{{ $item.name }}</text>
+          <text class="icon">&#xe628;</text>
+        </div>
+      </div>
+      <div class="more">
+        <a href="" @click="moreInfo">查看更多</a>
+        <text class="icon">&#xe628;&#xe628;</text>
+      </div>
+      <div class="buttons">
+        <text @click="toShare" class="share icon">&#xe630;</text>
+        <div class="addShelf" @click="addBookshelf">
+          <text class="addIcon icon">&#xe631;</text>
+          <text>加入书架</text>
+        </div>
+        <text class="keepRead" @click="toRead">继续阅读</text>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import share from '@system.share'
+import router from '@system.router'
+import { getBookDetail, getBookChapters } from '../../common/api/book'
+import { addBookshelf } from '../../common/api/bookshelf'
+import storage from '@system.storage'
+export default {
+  private: {
+    text: '快应用是什么？',
+    bookId: '',
+    bookInfo: {},
+    chapterList: [],
+    userInfo: {},
+    pageParams: {}
+  },
+  addBookshelf() {
+    addBookshelf({
+      uid: this.userInfo.id,
+      book_id: this.bookId
+    }).then(e => {
+      console.log('addBookshelf');
+    })
+  },
+  goRead(item) {
+    console.log( {
+        book_id: this.bookId,
+        chapter_id: item.id,
+        bookInfo: this.bookInfo
+      });
+    router.push({
+      uri: 'pages/reading',
+      params: {
+        book_id: this.bookId,
+        chapter_id: item.id,
+        bookInfo: this.bookInfo
+      }
+    })
+  },
+  onInit(pageParams) {
+    const _self = this;
+    storage.get({
+      key: 'user',
+      success: function (e) {
+        if (e) {
+          _self.userInfo = JSON.parse(e)        }
+      }
+    })
+    this.bookId = pageParams.bookId
+    this.pageParams = pageParams
+    getBookDetail(pageParams.bookId).then(e => {
+      e.words = (e.words / 10000).toFixed(2)
+      this.first_chapter_id = e.first_chapter_id
+      this.bookInfo = e;
+      this.$page.setTitleBar({ text: e.book_name })
+    })
+    getBookChapters({
+      page: 1,
+      book_id: pageParams.bookId
+    }).then(e => {
+      this.chapterList = e.data.slice(0, 10)
+    })
+  },
+  onWelcomeBtnClick() {
+
+  },
+  moreInfo() {
+    router.push({
+      uri: 'pages/directory',
+      params: {
+        bookId: this.bookId,
+        bookInfo: this.bookInfo
+      }
+    })
+  },
+  toRead() {
+    router.push({
+      uri: 'pages/reading',
+      params: {
+        book_id: this.pageParams.bookId,
+        chapter_id: this.pageParams.currentChapterId || this.first_chapter_id,
+        bookInfo: this.bookInfo
+      }
+    })
+  },
+  toShare() {
+    share.share({
+      type: 'text/html',
+      data: `【${bookInfo.book_name}】 ${bookInfo.brief}`,
+      success: function (data) {
+        console.log('handling success')
+      },
+      fail: function (data, code) {
+        console.log(`handling fail, code = ${code}`)
+      }
+    })
+  }
+}
+</script>
+
+<style lang="less">
+@import '../../assets/styles/style.less';
+.bookDes {
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 20px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  .buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    border-top: 1px solid #ccc;
+    height: 128px;
+    align-items: center;
+    .share {
+      font-size: 46px;
+    }
+    .addShelf {
+      .addIcon {
+        font-size: 42px;
+        margin-right: 10px;
+      }
+    }
+    .keepRead {
+      background-color: @blue;
+      color: white;
+    }
+    .addShelf,
+    .keepRead {
+      border: 1px solid #ccc;
+      height: 88px;
+      padding: 0 20px;
+      border-radius: 50px;
+    }
+  }
+  .more {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0;
+    a {
+      color: @blue;
+    }
+    .icon {
+      color: @blue;
+      transform: rotate(180deg);
+    }
+  }
+  .descript {
+    display: flex;
+    flex-direction: column;
+    .text {
+      margin: 20px 0;
+    }
+  }
+  .title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+  }
+  .directory {
+    display: flex;
+    flex-direction: column;
+    .directoryList {
+      padding: 16px 0;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #ccc;
+    }
+    .news {
+      background-color: #f2f2f2;
+      height: 80px;
+      padding: 0 30px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin: 20px 20px 20px 0;
+      .iconNew {
+        background-color: @blue;
+        color: white;
+        width: 78px;
+        height: 34px;
+        text-align: center;
+        margin-right: 20px;
+        font-size: 22px;
+      }
+      .text {
+        color: @blue;
+      }
+    }
+  }
+  .directoryList {
+    .icon {
+      transform: rotate(180deg);
+    }
+  }
+}
+.bookDetailsPage {
+  background-color: #262626;
+  display: flex;
+  flex-direction: column;
+  .head {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    padding: 20px;
+    .info {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      margin-left: 20px;
+      .bookName {
+        font-size: 42px;
+        margin-top: 50px;
+        color: white;
+      }
+      .author {
+        margin: 20px 0;
+      }
+      .author,
+      .des {
+        color: #bbb;
+      }
+    }
+    .img {
+      width: 220px;
+      height: 286px;
+      image {
+        width: 100%;
+      }
+    }
+  }
+}
+</style>

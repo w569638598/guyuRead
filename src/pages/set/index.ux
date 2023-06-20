@@ -1,0 +1,99 @@
+<template>
+  <div class="setPage">
+    <div class="list">
+      <lflist obj="{{$item}}" for="{{flist}}" @click="toPage($item.path)">
+      </lflist>
+    </div>
+
+    <div class="list">
+      <lflist obj="{{$item}}" for="{{slist}}">
+      </lflist>
+    </div>
+    <text class="changeAccount">切换账号</text>
+    <text class="logout">退出登录</text>
+  </div>
+</template>
+<import name="lflist" src="../../components/lfList.ux"></import>
+<script>
+import router from '@system.router'
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    flist: [
+      {
+        text: '基本信息',
+        right: {
+          icon: '&#xe628;',
+        },
+        path: 'pages/userBaseInfo'
+      },
+      {
+        text: '账号与安全',
+        right: {
+          icon: '&#xe628;'
+        }
+      },
+    ],
+    slist: [
+      {
+        text: '当前版本',
+        right: {
+          icon: '&#xe628;'
+        }
+      },
+      {
+        text: '我的阅读偏好',
+        right: {
+          text: '男',
+          icon: '&#xe628;'
+        }
+      },
+      {
+        text: '清除缓存',
+        right: {
+          btn: true,
+          text: '清除'
+        }
+      },
+
+    ]
+  },
+  toPage(pagePATH) {
+    router.push({
+      uri: pagePATH
+    })
+  },
+  onInit() {
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.changeAccount,
+.logout {
+  width: 90%;
+  height: 88px;
+  background-color: #ffffff;
+  text-align: center;
+  color: #333;
+  border-radius: 8px;
+}
+.changeAccount {
+  margin-bottom: 20px;
+}
+
+.setPage {
+  .flexC();
+  align-items: center;
+  background-color: @pageBC;
+  .list {
+    .flexC();
+    width: 90%;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+}
+</style>

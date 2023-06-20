@@ -1,0 +1,169 @@
+<script>
+/**
+ * 应用级别的配置，供所有页面公用
+ */
+const $utils = require('./helper/utils').default
+const $apis = require('./helper/apis').default
+import push from '@service.push'
+import { getCategory, getUserInfo } from './common/api/pub.js'
+/* @desc: 注入方法至全局 global,以便页面调用 */
+const hook2global = global.__proto__ || global
+hook2global.$utils = $utils
+hook2global.$apis = $apis
+import storage from '@system.storage'
+import device from '@system.device'
+import { JPushInterface } from './lib/jpush-quickapp-1.0.0'
+import fetch from '@system.fetch'
+import { kyyid } from './conf/kyyid'
+import { baseUrl } from './conf/server'
+export default {
+  unescapeIconCode: $utils.unescapeIconCode,
+  substringBookName: $utils.substringBookName,
+  userInfo: {},
+  onCreate() {
+    // 极光推送
+    // JPushInterface.setDebugMode(true);
+    // this.JPushInterface = JPushInterface.init(this, 'cede16a05083f72e26c4506f', "test-channel11111111111")
+    // JPushInterface.setDebugMode(true);
+    // JPushInterface.subscribeJPushMessage((title, content, msgid, extra)=>{
+    //   // console.log(title, content, msgid, extra, 'title, content, msgid, extratitle, content, msgid, extratitle, content, msgid, extratitle, content, msgid, extra');
+    // })
+    const _self = this;
+    // push.subscribe({
+    //   success: function (data) {
+    //     console.log(
+    //       `push.subscribe succeeded, result data = ${JSON.stringify(data)}`
+    //     )
+    //   },
+    //   fail: function (data, code) {
+    //     console.log(
+    //       `push.subscribe failed, result data ================================== ${JSON.stringify(
+    //         data
+    //       )}, code = ${code}`
+    //     )
+    //   },
+    //   complete: function () {
+    //     console.log('push.subscribe completed')
+    //   }
+    // })
+    let deviceInfo = {
+      imei: '',
+      android_ver: '',
+      android_id: '',
+      mobile_brand: '',
+    }
+    storage.get({
+      key: 'deviceInfo',
+      success: function (data) {
+        if (!data) {
+          Promise.all([new Promise((res, rej) => {
+            device.getInfo({
+              success: function (ret) {
+                deviceInfo.android_ver = ret.osVersionCode
+                deviceInfo.mobile_brand = ret.model
+                res()
+              }
+            })
+          }), new Promise((res, rej) => {
+            device.getId({
+              type: ['device', 'mac', 'user'],
+              success: function (ret) {
+                deviceInfo.android_id = ret.user
+                deviceInfo.imei = ret.device
+                res()
+              },
+              fail: function (data, code) {
+              }
+            })
+          })]).then((values) => {
+            _self.getUserData(deviceInfo)
+            storage.set({
+              key: 'deviceInfo',
+              value: deviceInfo,
+            })
+          });
+        } else {
+          let deviceInfo = JSON.parse(data)
+          _self.getUserData(deviceInfo)
+        }
+      }
+    })
+
+
+    // 分类
+    getCategory().then(e => {
+      storage.set({
+        key: 'category',
+        value: e,
+        success: function (data) {
+        },
+        fail: function (data, code) {
+        }
+      })
+    })
+  },
+  getUserData(deviceInfo) {
+    const _self = this;
+    fetch.fetch({
+      url: baseUrl + '/user/getCheckId',
+      // url: 'https://www.fastmock.site/mock/15555aa9ef821335a15c8467ecae2e63/list/list',
+      data: {
+        android_ver: deviceInfo.android_ver,
+        android_id: deviceInfo.android_id,
+        mobile_brand: deviceInfo.mobile_brand
+      },
+      header: {
+        imei: deviceInfo.imei,
+        kyyid: kyyid
+      },
+      success: function (response) {
+        if (response.code == 200) {
+          const res = JSON.parse(response.data)
+          _self.userInfo = res.data.user
+          storage.set({
+            key: 'lunboBag',
+            value: res.data.lunboBag.data,
+          })
+          storage.set({
+            key: 'lunboBagUpdateTime',
+            value: res.data.lunboBag.update_time,
+          })
+          storage.set({
+            key: 'myBag',
+            value: res.data.myBag,
+          })
+          storage.set({
+            key: 'user',
+            value: res.data.user,
+          })
+          storage.set({
+            key: 'access_token',
+            value: res.data.user.access_token,
+          })
+          storage.set({
+            key: 'refresh_token',
+            value: res.data.user.refresh_token,
+          })
+        } else {
+
+        }
+      },
+      fail: function (data, code) {
+      }
+    })
+
+    getUserInfo().then(e => {
+      if (e) {
+        storage.set({
+          key: 'user',
+          value: e,
+        })
+      }
+    })
+  }
+}
+</script>
+<style lang='less'>
+@import './assets/styles/style.less';
+</style>
+

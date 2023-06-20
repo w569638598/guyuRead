@@ -1,0 +1,138 @@
+<template>
+  <stack class="activityDetailPage" style="height: {{pageHeight}}px">
+    <image
+      class="titleImg"
+      src="{{item.image}}"
+    ></image>
+    <div class="content">
+      <div class="head">
+        <div class="line one"></div>
+        <text class="text">充{{item.recharge_amount}}元</text>
+        <div class="line two"></div>
+      </div>
+      <!--  -->
+      <div class="disc">
+        <text class="total">共得</text>
+        <text class="num">{{item.book_coins}}</text>
+        <text class="species">书币</text>
+      </div>
+      <text class="moregive">多送25元</text>
+      <image
+        class="voucherBtn"
+        src="/assets/images/activityDetail/btn.svg"
+      ></image>
+      <div class="guizBox">
+        <text class="title">活动规则</text>
+        <text class="guizeContent">
+          活动时间： 
+{{item.active_time_begin}}- -{{item.active_time_end}}
+
+活动规则：
+1.活动期间，单次充值49元，原来获得4900书币，活动期间再赠送2500书币
+
+2.充值购买的书币不设有效期，可随时使用；赠送的2500有效期为7天，请尽快使用，过期无效
+        </text>
+      </div>
+    </div>
+    <!--  -->
+
+    <!--  -->
+  </stack>
+</template>
+
+<script>
+import{getActivityDetail} from '../../common/api/activityCenter'
+
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    item: ''
+  },
+getActivityDetail(){
+  getActivityDetail({id: this.id}).then(e => {
+    if(e){
+    this.item = e}
+    console.log(e);
+  })
+},
+  onInit(params) {
+    this.id = params.id
+  this.getActivityDetail()
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+
+.content {
+  .guizBox {
+    margin-top: 150px;
+    padding: 0px 70px ;
+    .flexC();
+    .title{
+      text-align: center;
+      font-size: 36px;
+    }
+    text {
+      color: white;
+      font-size: 26px;
+    }
+  }
+  .voucherBtn {
+    width: 336px;
+    margin-top: 200px;
+  }
+  .moregive {
+    width: 172px;
+    height: 52px;
+    border-radius: 10px;
+    border: 2px solid @red;
+    text-align: center;
+  }
+  .disc {
+    margin: 20px 0;
+    .num {
+      font-size: 72px;
+    }
+  }
+  position: absolute;
+  .flexC();
+  align-items: center;
+  top: 340px;
+  text {
+    color: @red;
+  }
+  .head {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    .text {
+      margin: 0 20px;
+      font-size: 36px;
+    }
+    .line {
+      width: 120px;
+      height: 4px;
+    }
+    .one {
+      background: linear-gradient(to right, #fff, #fb4759);
+    }
+    .two {
+      background: linear-gradient(to right, #fb4759, #fff);
+    }
+  }
+}
+.titleImg {
+  width: 400px;
+  margin-top: 80px;
+}
+.activityDetailPage {
+  position: relative;
+  .flexC();
+  align-items: center;
+  background-image: url('../../assets/images/activityDetail/bg.jpg');
+  width: 100%;
+}
+</style>

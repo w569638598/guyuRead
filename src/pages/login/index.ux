@@ -1,0 +1,236 @@
+<template>
+  <div class="loginPage">
+    <div class="logo">
+      <image src="../../assets/images/loginLogo.svg"></image>
+      <text>海量精品原创小说</text>
+    </div>
+    <div class="formMain" style="height: {{formH}}px">
+      <div class="phoneNum formItem">
+        <text>+86</text>
+        <input
+          type="number"
+          value="{{phone}}"
+          onchange="updatePhone"
+          placeholder="请输入手机号"
+        />
+      </div>
+      <div class="verify formItem">
+        <input type="number" @change="updateCode" value="{{code}}" />
+        <text @click="sendCode">发送验证码</text>
+      </div>
+      <input
+        class="formItem loginBtn"
+        @click="loginFn"
+        type="button"
+        value="登录"
+      />
+      <div class="argeeBox">
+        <text class="icon" if="{{!isAgreen}}" @click="changeAgreen"
+          >&#xe636;</text
+        >
+        <text class="icon fc-b" else @click="changeAgreen">&#xe632;</text>
+        <text class="">
+          您已阅读并同意<a href="">《隐私政策》</a>和<a href="">《用户协议》</a>
+        </text>
+      </div>
+    </div>
+    <my-message id="message"></my-message>
+  </div>
+</template>
+<import name="my-checkbox" src="apex-ui/components/checkbox/index"></import>
+<import name="my-message" src="apex-ui/components/message/index"></import>
+<script>
+import device from '@system.device'
+import router from '@system.router'
+import { sendCode, login, getUserInfo } from '../../common/api/pub'
+import storage from '@system.storage'
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    formH: '',
+    winH: '',
+    phone: '',
+    code: '6433',
+    isAgreen: false,
+    userInfo: {}
+  },
+  updateCode(v) {
+    this.code = v.text
+  },
+  changeAgreen() {
+    this.isAgreen = !this.isAgreen
+  },
+  updatePhone(v) {
+    this.phone = v.text
+  },
+  handleAnimalChange() { },
+
+  loginFn() {
+    if (this.verification([1, 2, 3])) {
+      login({
+        type: 0,
+        phone: this.phone,
+        code: this.code,
+        kyy_id: 1,
+        uid: this.userInfo.id
+      }).then(e => {
+        storage.set({
+              key: 'user',
+              value: e,
+              success: function (data) {
+                router.push({
+                  uri: 'pages/home'
+                })
+              }
+            })
+      })
+    }
+  },
+  verification(veriList) {
+    if (veriList.includes(1) && !this.isAgreen) {
+      this.$child('message').showMessage({
+        content: '请先同意隐私协议和用户协议',
+        type: 'warning'
+      });
+      return false
+    }
+    if (veriList.includes(2) && !this.phone) {
+      this.$child('message').showMessage({
+        content: '请填写手机号',
+        type: 'warning'
+      });
+      return false
+    }
+    if (veriList.includes(3) && !this.code) {
+      this.$child('message').showMessage({
+        content: '请填写验证码',
+        type: 'warning'
+      });
+      return false
+    }
+    return true
+  },
+  sendCode() {
+    if (this.verification([1, 2])) {
+      sendCode({
+        phone: this.phone,
+        type: 0
+      }).then(e => {
+
+      })
+    }
+  },
+  onInit() {
+    const _self = this;
+    storage.get({
+      key: 'user',
+      success: function (e) {
+        if (e) {
+          _self.userInfo = JSON.parse(e)
+        }
+      },
+      fail: function (e) {
+      }
+    })
+    device.getInfo({
+      success: function (ret) {
+        // ret.windowHeight
+        _self.formH = ret.windowHeight - 1030;
+      }
+    })
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.loginPage {
+  background: linear-gradient(#335ad9, #2140c8);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  .logo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 160px;
+    margin-bottom: 100px;
+    image {
+      width: 390px;
+    }
+    text {
+      color: white;
+      letter-spacing: 24em;
+      margin-left: 20px;
+      margin-top: 20px;
+    }
+  }
+  .formMain {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    border-radius: 30px;
+    padding: 120px 70px;
+    .argeeBox {
+      display: flex;
+      justify-content: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .icon {
+        font-size: 36px;
+      }
+      a {
+        color: @blue;
+      }
+      .argeeCheckout {
+        padding: 0;
+      }
+      text {
+        font-size: 22px;
+      }
+    }
+    .formItem {
+      margin: 30px 0;
+      height: 100px;
+      border-radius: 100px;
+    }
+    .loginBtn {
+      background-color: @blue;
+      color: white;
+    }
+    .phoneNum {
+      padding-left: 30px;
+      display: flex;
+      input {
+        padding-left: 10px;
+        flex: 1
+      }
+    }
+    .phoneNum,
+    .verify {
+      background-color: #f2f2f2;
+    }
+    .verify {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      input {
+        flex: 1;
+        padding-left: 30px;
+      }
+      text {
+        width: 188px;
+        height: 88px;
+        background-color: @blue;
+        color: white;
+        text-align: center;
+        border-radius: 88px;
+      }
+    }
+  }
+}
+</style>

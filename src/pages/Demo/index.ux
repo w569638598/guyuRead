@@ -1,0 +1,26 @@
+<template>
+  <div class="doc-page">
+    <!-- 页面标题 -->
+    <input type="button" value="下拉框下拉框" @click="directoryPartSelect" />
+  </div>
+</template>
+<import name="my-select" src="apex-ui/components/select/index"></import>
+<script>
+export default {
+  data: {
+
+  },  
+  directoryPartSelect() {
+    let opt = ["1-100", "101-200", "201-300", "301-400", "401-500", "501-600"]
+    this.$child('select1').showSelect({
+      options: opt,
+    })
+  },
+  onInit() {
+  },
+
+}
+</script>
+
+<style lang="less">
+</style>

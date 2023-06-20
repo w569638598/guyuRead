@@ -1,0 +1,256 @@
+<template>
+  <div class="bookMallPage">
+    <!-- todayRecommend -->
+    <div class="todayRecommend">
+      <text class="title">今日推荐</text>
+      <div
+        class="recommendList"
+        for="{{todayRecommendBag}}"
+        @click="toDetail($item)"
+      >
+        <book item="{{$item}}" index="{{$idx}}"></book>
+      </div>
+      <div class="btn">
+        <text class="more" @click="toLookMore">查看更多</text>
+        <text class="change" @click="changeRecommend">换一换</text>
+      </div>
+    </div>
+    <!-- todayRecommend- end -->
+    <div class="bookNew">
+      <image
+        @click="toNewBooks"
+        src="/assets/images/bookmall/bookNewImg.jpg"
+      ></image>
+    </div>
+    <!-- may -->
+    <div class="lookMay">
+      <text class="title">你可能还会看</text>
+      <div class="meyList" for="{{mayLook}}" @click="toDetail($item)">
+        <book item="{{$item}}" index="{{$idx}}"></book>
+      </div>
+    </div>
+    <!-- 加桌 -->
+    <div class="addDeskPopup" if="{{showAddDeskPopup}}">
+      <div class="main">
+        <text class="title">添加桌面</text>
+        <text class="disc">可立享88书币红包</text>
+        <div class="btnBox">
+          <text class="addBtn">添加桌面</text>
+          <text class="cancel">残忍拒绝</text>
+        </div>
+      </div>
+    </div>
+    <!-- 加桌-end -->
+    <my-popup
+      id="popupCenter"
+      position="center"
+      title="火爆好书来袭"
+      closable="{{true}}"
+    >
+      <div class="list" for="{{list}}" @click="toDetail($item)">
+        <book item="{{mayItem}}" isedit="{{isedit}}" index="{{$idx}}"></book>
+      </div>
+      <div class="changeBox">
+        <text class="text">换一换</text>
+        <text class="icon">&#xe644;</text>
+      </div>
+    </my-popup>
+  </div>
+</template>
+<import name="book" src="../../components/book.ux"></import>
+<import name="my-popup" src="apex-ui/components/popup/index"></import>
+<script>
+import router from '@system.router'
+import storage from '@system.storage'
+import { getBookBag } from '../../common/api/pub'
+export default {
+  data: {
+    title: '欢迎体验快应用开发',
+    list: [{}, {}, {}],
+    bookImte: {
+      book_name: '书名',
+      persionname: '【火爆玄幻、热血爽文】他曾经被父亲打成废物逐出家门，却…',
+      bottomLeft: '悬疑｜已完结｜187万字',
+      bottomRight: '203.0万人阅读'
+    },
+    showAddDeskPopup: false,
+    mayItem: {
+      book_name: '书名',
+      persionname: '【火爆玄幻、热血爽文】他曾经被父亲打成废物逐出家门，却…',
+      bottomLeft: '历史',
+      bottomRight: '完结本'
+    },
+    todayRecommendPageNo: 1,
+    todayRecommendBag: [],
+    mayLook: [],
+  },
+  toNewBooks() {
+    router.push({
+      uri: 'pages/todayRecommend',
+      params: {
+      bagType: 'newBooks'
+      }
+    })
+  },
+  // 查看详情
+  toDetail(item) {
+    router.push({
+      uri: 'pages/bookDetail',
+      params: {
+        bookId: item.id
+      }
+    })
+  },
+  // 查看更多
+  toLookMore() {
+    router.push({
+      uri: 'pages/todayRecommend',
+      params: {
+        bagType: 2
+      }
+    })
+  },
+  changeRecommend() {
+  },
+  getBookBag(ut, type) {
+    getBookBag({
+      ut: ut,
+      type: type,
+    }).then(e => {
+      console.log(e, 'bookMall');
+      if (e) {
+        if (type == 2) {
+          storage.set({
+            key: 'todayRecommendBagUpdateTime',
+            value: e.update_time
+          })
+          this.todayRecommendBag = e.bookBag.slice(0, 3)
+        } else if (type == 3) {
+          storage.set({
+            key: 'mayLookUpdateTime',
+            value: e.update_time
+          })
+          this.mayLook = e.bookBag
+        }
+      }
+
+    })
+  },
+  onInit() {
+    const _self = this;
+    Promise.all([new Promise((res, rej) => {
+      storage.get({
+        key: 'todayRecommendBagUpdateTime',
+        success: function (e) {
+          res(e)
+        }
+      })
+    }), new Promise((res, rej) => {      storage.get({
+        key: 'mayLookUpdateTime',
+        success: function (e) {
+          res(e)
+        }
+      })
+    })
+    ]).then(e => {
+      this.getBookBag(e[0], 2)
+      this.getBookBag(e[1], 3)
+    })
+
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.changeBox {
+  align-items: center;
+  display: flex;
+  text-align: center;
+  width: 100%;
+  justify-content: center;
+  padding: 50px 0;
+}
+.addDeskPopup {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  position: fixed;
+  .flexC();
+  align-items: center;
+  justify-content: center;
+  .main {
+    .disc {
+      color: #fdf5dd;
+      margin-bottom: 50px;
+    }
+    width: 472px;
+    height: 540px;
+    background-image: url('/assets/images/bookmall/popupBG.png');
+    .flexC();
+    align-items: center;
+    justify-content: center;
+    .btnBox {
+      .flexC();
+      text {
+        text-align: center;
+      }
+      .cancel {
+        color: rgba(255, 255, 255, 0.57);
+      }
+      .addBtn {
+        background: linear-gradient(#fff770, #ffad00);
+        height: 66px;
+        width: 246px;
+        border-radius: 66px;
+        color: #c16e14;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+    }
+    .title {
+      font-size: 64px;
+      color: #fefbd7;
+      margin-top: 80px;
+    }
+  }
+}
+.todayRecommend {
+  .btn {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    text {
+      width: 322px;
+      height: 88px;
+      background-color: #ffffff;
+      text-align: center;
+      border-radius: 10px;
+    }
+  }
+}
+.bookNew,
+.lookMay,
+.todayRecommend {
+  width: 90%;
+}
+.title {
+  .titleS();
+  margin-bottom: 30px;
+}
+.bookMallPage {
+  align-items: center;
+  background-color: @pageBC;
+}
+.bookNew {
+  image {
+    width: 100%;
+    margin: 50px 0;
+  }
+}
+.bookMallPage,
+.lookMay,
+.todayRecommend {
+  .flexC();
+}
+</style>

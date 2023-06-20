@@ -1,0 +1,172 @@
+<template>
+  <div class="myAccountPage">
+    <div class="account">
+      <div class="species">
+        <text class="num fs-b">{{ accountData.coins }}书币</text>
+        <div class="btn fc-b">
+          <text class="text fc-b fs-26">充值</text>
+          <text class="icon fc-b fs-26">&#xe628;</text>
+        </div>
+      </div>
+      <div class="voucher" @click='goVoucher'>
+        <text class="num fs-b">{{ accountData.balance }}书券</text>
+        <div class="btn">
+          <text class="text fs-26 fc-b">有效期</text>
+          <text class="icon fc-b fs-26">&#xe628;</text>
+        </div>
+      </div>
+    </div>
+    <!--  -->
+    <div class="detailBox">
+      <text class="title">书币明细</text>
+      <div class="listBox" for="{{list}}">
+        <div class="monthType">
+          <text class="month">2023-02</text>
+          <div class="item">
+            <div class="detail detailType">
+              <text class="text fc-3 fs-36 fs-b">{{
+                $item.free_coin_type
+              }}</text>
+              <text class="num fc-3 fs-36 fs-b">{{ $item.coins }}书币</text>
+            </div>
+            <div class="where detailType">
+              <text class="fs-26">{{ $item.book_name }} 第十章</text>
+              <text class="fs-26 fc-3">分享好友抵扣</text>
+            </div>
+            <div class="date detailType">
+              <text class="startDate fs-26">{{ $item.created_at }}</text>
+              <text class="endDate fc-b fs-26"
+                >{{ $item.expiration_time }}过期</text
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { getCoinsDetail } from '../../common/api/myAccount'
+import { getCoinsBalanceTotal } from '../../common/api/rechargeRecord'
+ import router from '@system.router'
+
+import storage from '@system.storage'
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    list: [],
+    accountData: {}
+  },
+goVoucher(){
+  router.push({
+    uri: 'pages/myVoucher'
+  })
+},
+  onInit() {
+    const _self = this;
+    storage.get({
+      key: 'user',
+      success: function (e) {
+        if (e) {
+          _self.userInfo = JSON.parse(e)
+          getCoinsBalanceTotal({
+            uid: _self.userInfo.id
+          }).then(e => {
+            _self.accountData = e;
+          })
+          getCoinsDetail({
+            uid: _self.userInfo.id
+          }).then(e => {
+            if (e.length) {
+              e.forEach(item => {
+                let type = ''
+                switch (item.free_coin_type) {
+                  case 0:
+                    type = '未知';
+                    break;
+                  case 1:
+                    type = '签到赠送';
+                    break;
+                  case 2:
+                    type = '充值赠送';
+                    break;
+                  case 3:
+                    type = '任务赠送';
+                    break;
+                  case 4:
+                    type = '其他';
+                    break;
+                }
+                item.free_coin_type = str;
+              })
+            }
+            _self.list = e
+          })
+        }
+      }
+    })
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+@pageW: 90%;
+.detailBox {
+  width: @pageW;
+  margin-top: 50px;
+  .flexC();
+  .title {
+    .titleS();
+    margin-bottom: 20px;
+  }
+  .listBox {
+    .flexC();
+    .monthType {
+      .month {
+        font-size: 36px;
+        margin-bottom: 20px;
+      }
+      .flexC();
+      .item {
+        background-color: white;
+        padding: 20px;
+
+        .flexC();
+        .detailType {
+          justify-content: space-between;
+          margin: 10px 0;
+        }
+      }
+    }
+  }
+}
+.myAccountPage {
+  background-color: @pageBC;
+  align-items: center;
+  .flexC();
+  .account {
+    background-color: #ffffff;
+    height: 160px;
+    padding: 40px 0;
+    width: @pageW;
+    .species {
+      border-right: 2px solid #f2f2f2;
+    }
+    .num {
+      color: #333;
+    }
+    .icon {
+      transform: rotate(180deg);
+    }
+    .species,
+    .voucher {
+      width: 50%;
+      .flexC();
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+}
+</style>

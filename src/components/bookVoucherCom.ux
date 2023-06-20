@@ -1,0 +1,114 @@
+<template>
+  <div class="item {{ type == 'useful' ? 'useful': 'unserviceable' }}">
+    <div class="top" style="background-image: {{ type == 'useful' ? bg:bgH }}">
+      <div class="left">
+        <image
+          class="icon"
+          src="{{ type == 'useful' ? useIcon:unserviceableIcon }}"
+        ></image>
+        <text class="num">{{item.balance}}</text>
+        <text class="text">书券</text>
+      </div>
+      <div class="right">
+        <text class="type">任务赠送</text>
+        <text class="usefulDate">有效期至{{item.expiration_time}}</text>
+        <text class="endDate">{{item.days}}天后过期</text>
+        <div class="detailBox" @click="showDetail">
+          <text class="detail">详细信息</text>
+          <text class="icon {{item.isShowDetail ? 'active' : ''}}">&#xe628;</text>
+        </div>
+      </div>
+    </div>
+    <div class="detailBox" if="{{item.isShowDetail}}">
+      <text class="obtainDate">获得时间：{{item.created_at}}</text>
+      <text class="total">总额：20 书券</text>
+      <text class="used">已使用：0 书券</text>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data: {
+    title: "Hello World. Quickapp Component.",
+    bg: '../../assets/images/myVoucher/bg.png',
+    bgH: '../../assets/images/myVoucher/bg-h.png',
+    useIcon: '/assets/images/myVoucher/useFul.svg',
+    unserviceableIcon: '/assets/images/myVoucher/disabled.svg'
+  },
+
+  props: ['type', 'item'],
+  showDetail() {
+    this.$dispatch('voucherIsShowDetail', this.item)
+  },
+  onInit() {
+    console.log(this.item);
+   }
+}
+</script>
+
+<style lang='less'>
+@import '../assets/styles/style.less';
+.item {
+  margin-bottom: 30px;
+  .flexC();
+  & > .detailBox {
+    height: 130px;
+    background-color: white;
+    padding-left: 30px;
+    .flexC();
+    justify-content: center;
+    text {
+      font-size: 26px;
+    }
+  }
+  .top {
+    .left {
+      width: 160px;
+      align-items: center;
+      justify-content: space-between;
+      height: 132px;
+      border-right: 1px solid #fff;
+      margin-top: 35px;
+      .num {
+        margin: 20px 0;
+      }
+    }
+    .right {
+      margin-top: 20px;
+      margin-left: 40px;
+      .type {
+        font-weight: bold;
+        font-size: 32px;
+      }
+      .obtainDate {
+        font-size: 30px;
+      }
+      .endDate,
+      .detail {
+        font-size: 26px;
+      }
+      .endDate {
+        color: @red;
+      }
+      .detailBox {
+        justify-content: space-between;
+        .icon{
+          transform: rotate(90deg);
+        }
+        .active{
+          transform: rotate(-90deg);
+        }
+      }
+    }
+    .left,
+    .right {
+      .flexC();
+    }
+    height: 200px;
+    .icon {
+      width: 50px;
+    }
+  }
+}
+</style>

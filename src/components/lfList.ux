@@ -1,0 +1,53 @@
+<template>
+  <div class="item">
+    <div class="left">
+      <text class="text">{{ obj.text }}</text>
+    </div>
+    <div slot="right" class="right {{obj.right.btn ? 'btn' : ''}}" if="{{obj.right}}">
+      <text if="{{obj.right.text}}">{{ obj.right.text }}</text>
+      <text class="icon" if="{{obj.right.icon}}">{{
+        $app.unescapeIconCode(obj.right.icon)
+      }}</text>
+      <image if="{{obj.right.imgUrl}}" src="{{obj.right.imgUrl}}"></image>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data: {
+    title: "Hello World. Quickapp Component."
+  },
+
+  props: ['obj'],
+
+  onInit() {
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../assets/styles/style.less';
+.item {
+  height: 52px;
+  margin: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  text {
+    color: #333;
+  }
+  .icon {
+    transform: rotate(180deg);
+  }
+  .btn {
+    height: 48px;
+    padding: 0px 18px;
+    border-radius: 200px;
+    border: 2px solid @blue;
+    text {
+      color: @blue;
+    }
+  }
+}
+</style>

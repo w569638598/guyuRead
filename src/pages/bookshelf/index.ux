@@ -1,0 +1,470 @@
+<template>
+  <!-- template里只能有一个根节点 -->
+  <div class="bookshelfPage">
+    <!-- 轮播 -->
+    <div class="item-container home-swiper">
+      <swiper class="swiper swiper-animation" autoplay="{{autoPlay}}">
+        <div
+          class="swiper-item-box"
+          for="{{swiperItem}}"
+          @click="goRead($item)"
+        >
+          <stack class="stack">
+            <div class="bg"></div>
+            <div class="BookInfo">
+              <text class="name">{{ $item.book_name }}</text>
+              <text class="description">{{ $item.brief }}</text>
+            </div>
+            <div class="imgBox">
+              <image src="{{$item.cover}}" alt="" />
+            </div>
+          </stack>
+        </div>
+      </swiper>
+    </div>
+    <!-- 得书币 -->
+    <div class="readDuration">
+      <div class="left">
+        <text class="bookIcon">&#xe61c;</text>
+        <text class="duration">0</text><text>分钟</text>
+      </div>
+      <div class="right" @click="toSign">
+        <text>签到得书币</text>
+        <image src=""></image>
+      </div>
+    </div>
+    <!-- tabbar -->
+
+    <div class="bookshelfMain tabs">
+      <!-- </tab-bar> -->
+      <div class="tabbarBox">
+        <div class="tab-bar">
+          <text
+            class="tab-text {{tabIndex == $idx ? 'active' : ''}}"
+            for="{{tabBarList}}"
+            @click="changeTb($idx)"
+            >{{ $item }}</text
+          >
+        </div>
+        <div class="editBookShelf">
+          <text @click="editBookList" class="edit">编辑书架</text>
+        </div>
+      </div>
+
+      <!--基础组件-->
+      <div class="item-container" show="{{tabIndex == 0}}">
+        <div class="item-content">
+          <div for="{{myBookShelfList}}" class="bookBox" @click="goRead($item)">
+            <book item="{{$item}}" isedit="{{isedit}}" index="{{$idx}}" />
+          </div>
+        </div>
+      </div>
+
+      <!--基础组件-->
+      <div class="item-container" show="{{tabIndex == 1}}">
+        <div class="item-content">
+          <div for="{{browserecordList}}" class="bookBox" @click="goRead">
+            <book item="{{$item}}" isedit="{{isedit}}" index="{{$idx}}" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- tabbar-end -->
+    <my-popup
+      id="popupCenter"
+      position="center"
+      onclosed="onclosed('Center Popup')"
+      mask="{{false}}"
+      background="rgba(0,0,0,.5)"
+    >
+      <text class="icon" @click="closePopup">&#xe62a;</text>
+
+      <div class="popupMain">
+        <image src="" alt="" />
+        <div class="text">
+          <text>创明</text>
+          <text>如果孙承宗没有死，如果卢象升也没有死…</text>
+        </div>
+        <my-button
+          type="primary"
+          ontap="keepReadEv('popupCenter')"
+          size="small"
+          shape="round"
+          >继续阅读</my-button
+        >
+      </div>
+    </my-popup>
+  </div>
+</template>
+<import name="book" src="../../components/book.ux"></import>
+<import name="my-popup" src="apex-ui/components/popup/index"></import>
+<import name="my-button" src="apex-ui/components/button/index"></import>
+<script>
+import router from '@system.router'
+import utils from '../../helper/utils'
+import storage from '@system.storage'
+import { getBrowseRecord, getMybag, delBookshelf, delBrowseRecord } from '../../common/api/bookshelf'
+import { getUserInfo, getBookBag } from '../../common/api/pub'
+import { getBookChapters } from '../../common/api/book'
+
+export default {
+  // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
+  data: {
+    componentName: 'font-family',
+    title: '谷雨阅读',
+    autoPlay: true,
+    tabIndex: 0,
+    tabBarList: ['我的书架', '游览记录'],
+    isedit: false,
+    bookImte: {
+      book_name: '书名',
+      type: '推荐',
+      persionname: '【火爆玄幻、热血爽文】他曾经被父亲打成废物逐出家门，却…',
+      bottomLeft: '203.0万人阅读'
+    },
+    myBookShelfList: [],
+    swiperItem: [
+    ],
+    browseRecordPageNo: 1,
+    userInfo: {},
+    browserecordList: [],
+    myBagPageNo: 1
+  },
+  onclosed() {
+
+  },
+  toSign() {
+    router.push({
+      uri: 'pages/sign'
+    })
+  },
+  goRead(item) {
+    getBookChapters({
+      book_id: item.id,
+      page: 1
+    }).then(e => {
+      if (e.data) {
+        router.push({
+          uri: 'pages/reading',
+          params: {
+            book_id: item.id,
+            chapter_id: e.data[0].id,
+            bookInfo: item
+          }
+        })
+      }
+    })
+  },
+  closePopup() {
+    this.$child('popupCenter').hide()
+  },
+  keepReadEv() { },
+  changeTb(i) {
+    this.tabIndex = i;
+  },
+  editBookList(evt) {
+    this.isedit = !this.isedit;
+  },
+  getMybag(userInfo) {
+    getMybag({
+      uid: userInfo.id || userInfo.user_id,
+      page: this.myBagPageNo
+    }).then(e => {
+      this.myBookShelfList = e.data
+    })
+  },
+  getBrowseRecord(userInfo) {
+    getBrowseRecord({
+      uid: userInfo.id,
+      page: this.browseRecordPageNo
+    }).then(e => {
+      if (e) {
+        this.browserecordList = e;
+      }
+    })
+  },
+  onInit() {
+    // --------------------------------- Optimize SEO Start
+    // 当 titlebar 的文案与搜索的标题不一致时，请先设置 titlebar
+    // 备注：this.$page.setMeta 需要引擎 1090 版本及以上才支持，因此这段做注释处理；
+    // if (this.$page.setMeta) {
+    //   this.$page.setMeta({
+    //     title: '快应用示例模版',
+    //     description:
+    //       '快应用是移动互联网新型应用生态，与手机系统深度整合，为用户提供更加场景化的体验。具备传统APP完整的应用体验，但无需安装、即点即用。',
+    //   })
+    // }
+    const _self = this;
+    storage.get({
+      key: 'user',
+      success: function (e) {
+        if (e) {
+          const userInfo = JSON.parse(e)
+          _self.userInfo = JSON.parse(e)
+          if (userInfo.mobile || userInfo.is_fee) {//如果用户用手机号登录或者已充值
+            storage.get({
+              key: 'lunboBagUpdateTime',
+              success: function (e) {
+                if (e) {
+                  // type==0轮播书包
+                  getBookBag({
+                    ut: e,
+                    type: 0
+                  }).then(e => {
+                    _self.swiperItem = e.bookBag;
+                    storage.set({
+                      key: 'lunboBagUpdateTime',
+                      value: e.update_time,
+                    })
+                  })
+                }
+              }
+            })
+            _self.getMybag(userInfo)
+            _self.getBrowseRecord(userInfo)
+          } else {//如果用户没有用手机号登陆或者充值，从缓存中读取
+            storage.get({
+              key: 'browserecordList',
+              success(v) {
+                _self.browserecordList = v ? JSON.parse(v) : []
+              }
+            })
+            storage.get({
+              key: 'lunboBag',
+              success: function (e) {
+                if (e) {
+                  _self.swiperItem = JSON.parse(e)
+                }
+              }
+            })
+            storage.get({
+              key: 'myBag',
+              success: function (e) {
+                if (e) {
+                  _self.myBookShelfList = JSON.parse(e)
+                }
+              }
+            })
+          }
+        }
+      }
+    })
+
+    this.$on('delBookForShelf', this.delBookForShelf)
+  },
+  delBookForShelf(item) {
+    if (this.userInfo.mobile || userInfo.is_fee) {
+      // 如果编辑我的书架
+      if (this.tabIndex == 0) {
+        delBookshelf({
+          id: this.myBookShelfList[item.detail.index].book_id
+        }).then(e => {
+          this.getMybag(this.userInfo)
+
+        })
+      } else {
+        // 如果编辑浏览记录
+        delBrowseRecord({
+          id: this.browserecordList[item.detail.index].book_id
+        }).then(e => {
+          this.getBrowseRecord(this.userInfo)
+
+        })
+      }
+
+    } else {
+      // 如果用户没有手机号登录或者充值
+      if (this.tabIndex == 0) { //如果编辑我的书架
+        storage.get({
+          key: 'myBag',
+          success: function (e) {
+            let myBookShelfList = v ? JSON.parse(v) : [];
+            let arr = myBookShelfList.filter(i => i.book_id != this.myBookShelfList[item.detail.index].book_id);
+            _self.myBookShelfList = arr;
+            storage.set({
+              key: 'myBag',
+              value: arr
+            })
+          }
+        })
+      } else {//如果编辑浏览记录
+        storage.get({
+          key: 'browserecordList',
+          success(v) {
+            let browserecordList = v ? JSON.parse(v) : [];
+            let arr = browserecordList.filter(i => i.book_id != this.myBookShelfList[item.detail.index].book_id);
+            _self.browserecordList = arr;
+            storage.set({
+              key: 'browserecordList',
+              value: arr
+            })
+          }
+        })
+      }
+
+    }
+  }
+}
+</script>
+
+<style lang="less">
+@import '../../assets/styles/style.less';
+@imgW: 214px;
+.icon {
+  text-align: right;
+  color: white;
+  margin: 10px 10px 0 0;
+}
+
+.popupMain {
+  height: 200px;
+  border-radius: 60px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  .text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  text {
+    color: white;
+  }
+  image {
+    width: 100px;
+    height: 100px;
+    background-color: white;
+    margin-right: 10px;
+  }
+}
+.tabbarBox {
+  margin-bottom: 20px;
+  .tab-bar {
+    text {
+      margin: 0 10px;
+    }
+  }
+}
+.bookBox {
+  margin: 20px auto;
+  width: 100%;
+}
+.editBookShelf {
+  display: flex;
+  justify-content: flex-end;
+  width: 90%;
+  text-align: right;
+}
+.tabs {
+  .tab-bar {
+    width: 100%;
+    display: flex;
+    .active {
+      font-size: 32px;
+      color: #1d39c4;
+    }
+    text {
+      font-size: 28px;
+    }
+  }
+}
+.edit {
+  font-size: 28px;
+}
+
+.bookshelfPage {
+  display: flex;
+  flex-direction: column;
+  background-color: #f0f0f0;
+  .item-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+}
+.bookshelfMain {
+  width: 90%;
+  margin: 40px auto 20px auto;
+  display: flex;
+  flex-direction: column;
+}
+.readDuration {
+  height: 100px;
+  background-color: white;
+  border-radius: 50px;
+  padding: 0 50px;
+  display: flex;
+  justify-content: space-between;
+  width: 90%;
+  margin: 0 auto;
+  margin-top: 30px;
+  .left {
+    .bookIcon {
+      font-family: iconfont;
+      font-size: 56px;
+    }
+    .duration {
+      font-size: 42px;
+      font-weight: bold;
+      color: #000000;
+      margin-right: 10px;
+    }
+  }
+  .right text {
+    color: #1d39c4;
+  }
+}
+.swiper {
+  margin: 0px auto 20px;
+  height: 300px;
+  width: 90%;
+  .swiper-item-box {
+    height: 100%;
+    .stack {
+      height: 100%;
+      .bg {
+        background-color: white;
+        width: 100%;
+        height: 70%;
+        margin-top: 100px;
+      }
+    }
+    .imgBox {
+      width: @imgW;
+      margin-left: 20px;
+      image {
+        width: 100%;
+      }
+    }
+
+    .BookInfo {
+      display: flex;
+      flex-direction: column;
+      margin-top: 100px;
+      flex: 1;
+      text {
+        padding-left: @imgW + 30;
+      }
+      .description {
+        lines: 2;
+        text-overflow: ellipsis;
+      }
+      .name {
+        font-size: 42px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        margin-top: 10px;
+        color: #000000;
+        lines: 1;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}
+.bg {
+  background-color: white;
+  width: 100%;
+  height: 70%;
+  margin-top: 30%;
+}
+</style>

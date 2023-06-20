@@ -1,0 +1,71 @@
+<template>
+  <div class="taskCom">
+    <div class="left">
+      <div class="titleBox">
+        <text class="title">{{item.task_name || ''}}</text>
+        <image src="/assets/images/species.svg"></image>
+        <text class="species fc-o">+{{item.read_coupon_reward}}书币</text>
+      </div>
+      <text class="details">{{item.task_desc}}</text>
+    </div>
+    <div class="taskStatus">
+      <text if="{{item.is_over}}" class="taskStatusBtn in">领取</text>
+      <text else class="taskStatusBtn ed">去完成</text>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data: {
+    title: "Hello World. Quickapp Component."
+  },
+
+  props: ['item'],
+
+  onInit() { 
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../assets/styles/style.less';
+.taskCom {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  margin: 20px 0;
+  .left {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    .titleBox {
+      margin-bottom: 20px;
+      image{
+        margin-left: 10px
+      }
+    }
+    .title {
+      font-weight: bold;
+      color: #333;
+      font-size: 32px;
+    }
+  }
+}
+.taskStatus {
+  .in {
+    background-color: #fff2e8;
+    color: #fa541c;
+  }
+  .ed {
+    background: linear-gradient(to right, #ffc53d, #fa7b4d);
+    color: white;
+  }
+}
+.taskStatusBtn {
+  width: 148px;
+  height: 60px;
+  border-radius: 60px;
+  text-align: center;
+}
+</style>

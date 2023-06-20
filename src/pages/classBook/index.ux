@@ -1,0 +1,216 @@
+<template>
+  <div class="classBookPage">
+    <div class="nav">
+      <div
+        class="navBox {{activeIndex === $idx ? 'active' : ''}}"
+        for="{{navList}}"
+        @click="changeNav($idx, $item)"
+      >
+        <text>{{ $item.name }}</text>
+      </div>
+    </div>
+    <div class="bookMain">
+      <div class="type">
+        <text class="{{typeIndex == 0 ? 'active' : ''}}" @click="changeType(0)"
+          >全部</text
+        >
+        <text class="{{typeIndex == 1 ? 'active' : ''}}" @click="changeType(1)"
+          >完结本</text
+        >
+        <text class="{{typeIndex == 2 ? 'active' : ''}}" @click="changeType(2)"
+          >连载中</text
+        >
+      </div>
+      <div class="bookList">
+        <list class="list-content" id="list" @scrollbottom="nextPage">
+          <!-- 列表元素，属性type值相同时，需要确保渲染中dom结构相同 -->
+          <list-item
+            type="listItem"
+            class="item item-color"
+            for="{{listData}}"
+            @click="toBookDetails($item)"
+          >
+            <book item="{{$item}}" index="{{$idx}}"></book>
+          </list-item>
+        </list>
+      </div>
+    </div>
+  </div>
+</template>
+<import name="my-button" src="apex-ui/components/button/index"></import>
+<import name="book" src="../../components/book.ux"></import>
+
+
+<script>
+import router from '@system.router'
+import storage from '@system.storage'
+import { getBookList } from '../../common/api/book'
+
+export default {
+  data: {
+    title: "分类页面",
+    activeIndex: 0,
+    typeIndex: 0,
+    listData: [1, 2, 3, 1, 2, 3, 1, 2, 3],
+    navList: [
+      {
+        name: '全部全部',
+        id: ''
+      },
+    ],
+    bookImte: {
+      book_name: '书名',
+      persionname: '【火爆玄幻、热血爽文】他曾，却…',
+      bottomLeft: '玄幻 | 23.23万人阅读',
+      bottomRight: '已完结',
+      brc: 'green'
+    },
+    pageNo: 1,
+    hasMore: true,
+    bookType: '',
+    bookStatus: ''
+  },
+
+  props: [],
+  loadMore() { },
+  nextPage() {
+    if (!this.hasMore) return;
+    this.pageNo++;
+    let params = {
+      page: this.pageNo
+    }
+    if(this.bookType){
+      params.cate_id = this.bookType
+    }
+    if(this.bookStatus){
+      params.status = this.bookStatus
+    }
+    this.getData(params)
+  },
+  toBookDetails(item) {
+    router.push({
+      uri: 'pages/bookDetail',
+      params:{
+        bookId: item.id,
+        currentChapterId: item.first_chapter_id,
+        bookInfo: item
+      }
+    })
+  },
+  changeType(i) {
+    this.typeIndex = i;
+    this.pageNo = 1;
+    let params = {
+      page: this.pageNo
+    }
+    if (this.bookType) {
+      params.cate_id = this.bookType
+    }
+    if (i == 1) {
+      this.bookStatus = 1
+      params.status = 1
+    } else if (i == 2) {
+      this.bookStatus = 0
+      params.status = 0
+    }else{
+      this.bookStatus = null
+    }
+    this.getData(params)
+  },
+  changeNav(i, item) {
+    this.activeIndex = i;
+    this.pageNo = 1;
+    let params = {
+      page: this.pageNo
+    }
+    this.bookType = item.id
+    if (item.id) {
+      params.cate_id = item.id
+    }
+    this.getData(params)
+  },
+  getData(params) {
+    getBookList({...params, type: 1}).then(data => {
+      if (!data.length || data.length < 15) {
+        this.hasMore = false;
+      }
+      data.forEach(e => {
+        e.bottomLeft = (e.read_counts/10000).toFixed(2) + '万人阅读'
+      })
+      if (this.pageNo == 1) {
+        this.listData = data
+        this.$element('list').scrollTo({ index: 0 ,smooth:true})
+      } else {
+        this.listData = this.listData.concat(data)
+      }
+    })
+  },
+  onInit() {
+    const _self = this;
+    this.getData({
+      page: 1
+    })
+    storage.get({
+      key: 'category',
+      success: function (data) {
+        if(data){
+        _self.navList = _self.navList.concat(JSON.parse(data))
+        }
+      },
+      fail: function (data, code) {
+      }
+    })
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.bookList {
+  display: flex;
+  flex-direction: column;
+  .list-content {
+    height: 100%;
+  }
+}
+.bookMain {
+  display: flex;
+  flex-direction: column;
+  .type {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    margin: 36px auto;
+    padding-bottom: 10px;
+    text {
+      width: 160px;
+      height: 80px;
+      text-align: center;
+      border-radius: 6px;
+      background-color: #eeeeee;
+    }
+    .active {
+      color: @blue;
+      border: 2px solid @blue;
+    }
+  }
+}
+.nav {
+  display: flex;
+  flex-direction: column;
+  background-color: #f6f6f6;
+  width: 200px;
+  height: 100%;
+  .active {
+    background-color: white;
+    border-left: 6px solid @blue;
+  }
+  .navBox {
+    height: 100px;
+    text {
+      width: 100%;
+      text-align: center;
+    }
+  }
+}
+</style>

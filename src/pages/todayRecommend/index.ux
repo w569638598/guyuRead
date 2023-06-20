@@ -1,0 +1,126 @@
+<template>
+  <div class="todayRecommendPage">
+    <div class="booklist">
+      <div class="item" for="{{bookList}}" @click="goRead($item)">
+        <!-- <div class="img">
+          <image src="/assets/images/飞书20230516-113755.png"></image>
+        </div>
+        <div class="infoBox">
+          <text class="name">床i摩纳哥</text>
+          <div class="info">
+            <text class="author">瞎JB写 | </text>
+            <text class="words">123.3万字 | </text>
+            <text class="type fc-o">历史</text>
+          </div>
+          <text class="discript"
+            >如果孙承宗没有死，如果卢象升也没有死，大明会怎么样？如果李…</text
+          >
+        </div> -->
+        <book item="{{$item}}"></book>
+      </div>
+    </div>
+  </div>
+</template>
+<import name="book" src="../../components/book.ux"></import>
+<script>
+import { getBookBag } from '../../common/api/pub'
+import { getNewBooks } from '../../common/api/bookMall'
+import storage from '@system.storage'
+import router from '@system.router'
+export default {
+  private: {
+    bookList: []
+  },
+  goRead(item) {
+    router.push({
+      uri: 'pages/bookDetail',
+      params: {
+        bookId: item.id
+      }
+    })
+  },
+  // 只有爆款书包
+  getBookBag(ut, type) {
+    getBookBag({
+      ut: ut,
+      type: type,
+    }).then(e => {
+      console.log(e, 'bookMall');
+      if (e) {
+        storage.set({
+          key: 'todayRecommendBagUpdateTime',
+          value: e.update_time
+        })
+        this.bookList = e.bookBag
+      }
+
+    })
+  },
+  // 查看新书入库
+  getNewBooks(){
+    getNewBooks().then(e=> {
+      console.log(e);
+      this.bookList = e
+    })
+  },
+  onInit(params) {
+    const _self = this;
+    console.log(params);
+    if (params.bagType != 'newBooks') {
+      storage.get({
+        key: 'todayRecommendBagUpdateTime',
+        success: function (e) {
+          _self.getBookBag(e, params.bagType)
+        }
+      })
+    }else{
+      this.getNewBooks()
+    }
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.todayRecommendPage {
+  .flexC();
+  align-items: center;
+  background-color: @pageBC;
+  .booklist {
+    width: 90%;
+    .flexC();
+    .item {
+      width: 100%;
+      background-color: #ffffff;
+      /* padding: 20px; */
+      margin-bottom: 40px;
+      border-radius: 10px;
+      .infoBox {
+        .info {
+          margin-top: 10px;
+          margin-bottom: 20px;
+          text {
+            font-size: 26px;
+          }
+        }
+
+        padding-left: 20px;
+        padding-top: 20px;
+        .name {
+          font-size: 36px;
+          font-weight: bold;
+        }
+        .flexC();
+      }
+      .img {
+        width: 198px;
+        height: 240px;
+        image {
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+  }
+}
+</style>

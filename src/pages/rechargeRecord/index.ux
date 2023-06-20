@@ -1,0 +1,178 @@
+<template>
+  <div class="rechargeRecordPage">
+    <div class="account">
+      <text class="title">账户余额</text>
+      <div class="balance">
+        <div class="item">
+          <text class="num">{{accountData.coins}}</text>
+          <text class="text">我的书币</text>
+        </div>
+        <div class="item">
+          <text class="num">{{accountData.balance}}</text>
+          <text class="text">我的书券</text>
+        </div>
+      </div>
+    </div>
+    <!-- record main -->
+    <div class="recordMain">
+      <div class="head">
+        <text class="title">充值记录</text>
+        <text class="right">本月累计 {{recordData.total_cost}}</text>
+      </div>
+      <!-- list -->
+      <div class="listBox">
+        <div class="item" for="{{recordData.list}}">
+          <div class="top">
+            <text class="date">{{$item.pay_time}}</text>
+            <text class="status">{{$item.order_status == 0 ? '已完成' : '已取消'}}</text>
+          </div>
+          <!--  -->
+          <div class="center">
+            <div class="rechargeType">
+              <image if="{{$item.recharge_type == 1}}" src="/assets/images/wechat.svg"></image>
+              <image else src="/assets/images/zfb.svg"></image>
+              <text if="{{$item.recharge_type == 1}}" class="text">微信充值</text>
+              <text else class="text">支付宝充值</text>
+            </div>
+            <text class="money">{{$item.coins}}书币</text>
+          </div>
+          <!--  -->
+          <div class="bottom">
+            <text class="order">订单号：{{$item.order_no}}</text>
+            <text class="money">实付金额¥{{$item.cost}}</text>
+          </div>
+        </div>
+      </div>
+      <!-- end -->
+    </div>
+  </div>
+</template>
+
+<script>
+import { getRechargeRecord,getCoinsBalanceTotal } from '../../common/api/rechargeRecord'
+import storage from '@system.storage'
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    userInfo: {},
+    recordData: {
+      total_cost: 0,
+      list: []
+    },
+    accountData: {}
+  },
+
+  onInit() {
+    const _self = this;
+    storage.get({
+      key: 'user',
+      success: function (e) {
+        if (e) {
+          _self.userInfo = JSON.parse(e)
+          getCoinsBalanceTotal({
+            uid: _self.userInfo.id
+          }).then(e => {
+            _self.accountData = e;
+          })
+          getRechargeRecord({
+            uid: _self.userInfo.id
+          }).then(e =>{
+            _self.recordData['list'] = e
+          })
+        }
+      }
+    })
+
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+@cw: 90%;
+.account,
+.recordMain {
+  width: @cw;
+}
+.listBox {
+  .item {
+    background-color: #ffffff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    .top,
+    .center,
+    .bottom {
+      justify-content: space-between;
+    }
+    text {
+      font-size: 28px;
+    }
+    .center {
+      align-items: center;
+      image {
+        width: 52px;
+      }
+      margin: 20px 0;
+      text {
+        color: #333;
+        font-size: 36px;
+      }
+    }
+  }
+}
+.listBox,
+.item {
+  .flexC();
+}
+.recordMain {
+  .flexC();
+  margin-top: 50px;
+  .head {
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 30px;
+  }
+  .right {
+    font-size: 26px;
+  }
+  .title {
+    .titleS();
+  }
+}
+.rechargeRecordPage {
+  .flexC();
+  align-items: center;
+  padding-top: 50px;
+  background-color: @pageBC;
+}
+.account {
+  .title {
+    margin-bottom: 30px;
+  }
+  background: linear-gradient(to right, #3e6be4, #1d39c4);
+  border-radius: 10px;
+  height: 220px;
+  .flexC();
+  align-items: center;
+  justify-content: center;
+  .balance {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    .item {
+      .flexC();
+      .num {
+        font-size: 50px;
+        .text {
+          font-size: 26px;
+        }
+      }
+      align-items: center;
+    }
+  }
+  text {
+    color: white;
+  }
+}
+</style>

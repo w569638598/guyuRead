@@ -1,0 +1,63 @@
+<template>
+  <div class="payTypeCom" style="width: {{width}}">
+    <div class="payType">
+      <text class="title"> 选择支付方式 </text>
+      <div class="typeBox">
+        <div class="wechat item">
+          <image src="/assets/images/wechat.svg"></image>
+          <text>微信支付</text>
+        </div>
+        <div class="ali item">
+          <image src="/assets/images/zfb.svg"></image>
+          <text>支付宝</text>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+    data: {
+        title: "Hello World. Quickapp Component."
+    },
+
+    props: {
+        width: {
+            default: "100%"
+        }
+    },
+
+    onInit() { }
+}
+</script>
+
+<style lang='less'>
+@import '../assets/styles/style.less';
+.payType {
+  margin-top: 50px;
+  width: 100%;
+  .typeBox {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    .item {
+      width: 324px;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #000000;
+      border-radius: 10px;
+      image{
+          width: 70px;
+      }
+    }
+  }
+  .flexC();
+  .title {
+    .titleS();
+    margin-bottom: 20px;
+  }
+}
+</style>

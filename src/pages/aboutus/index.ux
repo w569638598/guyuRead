@@ -1,0 +1,91 @@
+<template>
+  <div class="aboutusPage">
+    <div class="app">
+      <image src="/assets/images/logo.svg"></image>
+      <text class="appName">{{ $app._def.manifest.name }}</text>
+      <text>{{ $app._def.manifest.versionName }}</text>
+    </div>
+    <div class="appinfo">
+      <lflist obj="{{$item}}" for="{{slist}}"> </lflist>
+    </div>
+  </div>
+</template>
+<import name="lflist" src="../../components/lfList.ux"></import>
+<script>
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    slist: [
+      {
+        text: '版本更新',
+        right: {
+          text: ''
+        }
+      },
+      {
+        text: '联系我们',
+        right: {
+          text: '123-123-123',
+        }
+      },
+      {
+        text: '用户协议',
+        right: {
+          icon: '&#xe628;'
+        }
+      }, {
+        text: '隐私政策',
+        right: {
+          icon: '&#xe628;'
+        }
+      }, {
+        text: '会员服务协议',
+        right: {
+          icon: '&#xe628;'
+        }
+      }, {
+        text: '知识产权声明',
+        right: {
+          icon: '&#xe628;'
+        }
+      },
+
+    ]
+  },
+
+  onInit() {
+    console.log(this.$app._def);
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.aboutusPage {
+  background-color: @pageBC;
+  justify-content: center;
+  .flexC();
+  align-items: center;
+  .appinfo{
+    background-color: white;
+    border-radius: 20px;
+  }
+  .app{
+    margin-bottom: 30px;
+    align-items: center;
+    .appName{
+      margin: 10px 0;
+    }
+    image{
+      width: 160px;
+      height: 160px;
+    }
+  }
+  .app,
+  .appinfo {
+    width: 90%;
+    padding: 20px;
+    .flexC();
+  }
+}
+</style>

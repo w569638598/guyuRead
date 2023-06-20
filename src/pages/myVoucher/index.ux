@@ -1,0 +1,94 @@
+<template>
+  <div class="myVoucherPage">
+    <div class="useful typeBox">
+      <text class="title">可使用</text>
+      <div class="listBox">
+        <bookVoucher for="{{usefulList}}" type="useful" item="{{$item}}"></bookVoucher>
+      </div>
+    </div>
+    <div class="unserviceable typeBox">
+      <text class="title">不可使用</text>
+      <div class="listBox">
+        <bookVoucher for="{{unusefulList}}" item="{{$item}}" type="unserviceable"></bookVoucher>
+      </div>
+    </div>
+  </div>
+</template>
+<import name="bookVoucher" src="../../components/bookVoucherCom.ux"></import>
+ 
+<script>
+import {getBalanceDetail} from '../../common/api/myVoucher'
+import storage from '@system.storage'
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    itemObj: {isShowDetail: false},
+    itemObj2: {isShowDetail: true},
+    userInfo: {},
+    usefulList: [],
+    unusefulList: []
+  },
+  changeShowDetail(item) {
+    item.detail.isShowDetail = !item.detail.isShowDetail
+  },
+  getBalanceDetail(){
+    console.log(this.userInfo);
+    getBalanceDetail({
+      uid: this.userInfo.id
+    }).then(e => {
+      e.forEach(item => {
+        item.isShowDetail = false
+        if(item.is_expire == 0){
+          this.usefulList.push(item)
+        }else{
+          this.unusefulList.push(item)
+        }
+      })
+      console.log(e,'=----=================');
+    })
+  },
+  onInit() {
+    const _self = this;
+    storage.get({
+      key: 'user',
+      success: function(e){
+        if(e){
+          _self.userInfo = JSON.parse(e);
+          console.log(_self.userInfo ,e );
+          _self.getBalanceDetail()
+        }
+      }
+    })
+    this.$on('voucherIsShowDetail', this.changeShowDetail)
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.unserviceable {
+  margin-top: 50px;
+}
+.title {
+  .titleS();
+  margin-bottom: 20px;
+  text-align: left;
+  width: 100%;
+  width: 90%;
+}
+.listBox {
+  .flexC();
+  width: 90%;
+}
+.myVoucherPage {
+  background-color: @pageBC;
+  padding-top: 50px;
+}
+.typeBox {
+  align-items: center;
+}
+.myVoucherPage,
+.typeBox {
+  .flexC();
+}
+</style>

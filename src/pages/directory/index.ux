@@ -1,0 +1,168 @@
+<template>
+  <div class="directoryPage">
+    <text class="title">{{ bookInfo.book_name }}</text>
+    <div class="info">
+      <text class="left" id="box1"
+        >已更新至{{ bookInfo.last_chapter_name }}</text
+      >
+      <div class="directoryPart" @click="directoryPartSelect">
+        <text>{{ directoryPartVal }}</text>
+        <text class="icon">&#xe635;</text>
+      </div>
+    </div>
+    <list
+      @scroll="scroll"
+      @scrollbottom="nextPage"
+      id="list"
+      @scrolltop="previousPage"
+    >
+      <list-item
+        id="list_{{$idx}}"
+        class="directoryList"
+        type="1"
+        for="{{chapterList}}"
+      >
+        <text class="text">{{ $item.name }}</text>
+        <text class="money icon">
+          {{ $item.is_vip == 0 ? '' : $app.unescapeIconCode('&#xe634;') }}
+          <!-- 21书币 <span class="icon">&#xe634;</span> -->
+        </text>
+      </list-item>
+    </list>
+    <my-select id="select1" oncomfirm="singleClose"></my-select>
+  </div>
+</template>
+<import name="my-select" src="apex-ui/components/select/index"></import>
+<script>
+import { getBookChapters } from '../../common/api/book'
+export default {
+  private: {
+    title: '高手下山',
+    bookId: '',
+    pageNo: 1,
+    hasMore: true,
+    chapterList: [],
+    bookInfo: {},
+    chapterSelect: [],
+    scrollNum: 0,
+    totalChapter: null,
+    listComH: '',
+    hasPage: []
+  },
+  computed: {
+    // 计算属性的 getter
+    directoryPartVal() {
+      // `this` 指向 vm 实例
+      // console.log(this.scrollNum/77.58, '------------');
+      // return this.chapterList[this.scrollNum/77.58 + 20]
+      return this.chapterSelect[this.pageNo - 1]
+    }
+  },
+  directoryPartSelect() {
+    this.$child('select1').showSelect({
+      options: this.chapterSelect,
+    })
+  },
+  scroll(obj) {
+    this.scrollNum += obj.scrollY;
+  },
+  previousPage() {
+    if (this.pageNo == 1) return;
+    this.pageNo--;
+    this.getData('unshift')
+  },
+  nextPage() {
+    if (!this.hasMore) return;
+    this.pageNo++;
+    this.getData('push')
+  },
+  singleClose(item) {
+    this.pageNo = this.chapterSelect.indexOf(item.detail.data) + 1;
+    this.directoryPartVal = item.detail.data;
+    this.getData('init')
+  },
+  getData(eventType) {
+    getBookChapters({
+      page: this.pageNo,
+      book_id: this.bookId
+    }).then(e => {
+      if (e.data.length < 100) { this.hasMore = false } else { this.hasMore = true }
+      if (eventType == 'push') {
+        if (this.hasPage.includes(this.pageNo)) return;
+        this.chapterList = this.chapterList.concat(e.data)
+        this.hasPage.push(this.pageNo)
+      } else if (eventType == 'unshift') {
+        if (this.hasPage.includes(this.pageNo)) return;
+        this.chapterList = e.data.concat(this.chapterList)
+        this.$element('list').scrollTo({ index: 100, smooth: false })
+        this.hasPage.push(this.pageNo)
+      } else if (eventType == 'init') {
+        this.hasPage = [this.pageNo]
+        this.chapterList = e.data
+      }
+    })
+  },
+  onShow() {
+    const _self = this;
+    this.$element('list').getBoundingClientRect({
+      success: function (data) {
+        const { height } = data;
+        _self.listComH = height
+      },
+      fail: (errorData, errorCode) => {
+
+      }
+    })
+  },
+  onInit(a) {
+    this.bookId = a.bookId
+    this.bookInfo = JSON.parse(a.bookInfo)
+    this.totalChapter = Math.ceil(this.bookInfo.total_chapter_num / 100)
+    for (let i = 0; i <= this.totalChapter - 1; i++) {
+      if (i == 0) {
+        this.chapterSelect.push('1-100')
+      } else {
+        this.chapterSelect.push(`${i}00-${i}99`)
+      }
+    }
+
+    this.getData('init')
+  }
+}
+</script>
+
+<style lang="less">
+@import '../../assets/styles/style.less';
+.directoryPage {
+  display: flex;
+  flex-direction: column;
+  padding: 40px 36px;
+  .title {
+    font-size: 38px;
+    color: #333;
+  }
+  .info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    text {
+      font-size: 24px;
+    }
+    .directoryPart {
+      color: #333;
+    }
+    .left {
+      color: #777;
+    }
+  }
+}
+.directoryList {
+  padding: 18px 0;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ccc;
+  .money {
+    color: @orange;
+  }
+}
+</style>

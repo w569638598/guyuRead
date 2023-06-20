@@ -1,0 +1,343 @@
+<template>
+  <div class="signPage">
+    <div class="signMain">
+      <div class="head">
+        <text class="left">已连续打卡<span class="fsc-r">2</span>天</text>
+        <text class="right" @click="guiz">规则</text>
+      </div>
+      <!-- sign -->
+      <div class="signBox">
+        <div
+          @click="signing"
+          class="card {{($idx+1) <=signInfo.num  ? 'signed' : ''}}"
+          for="{{signConfig}}"
+        >
+          <text class="day">第{{ $idx + 1 }}天</text>
+          <image src="/assets/images/species.svg"></image>
+          <text class="species">+{{ $item.value }}</text>
+        </div>
+        <div class="lastCard">
+          <div class="left">
+            <text class="day">第七天</text>
+            <text class="info">+{{ day7 }}</text>
+          </div>
+          <div class="right">
+            <image src="/assets/images/baoxiang.svg"></image>
+          </div>
+        </div>
+      </div>
+      <!--  -->
+      <div class="signBtnBox">
+        <text class="signBtn">{{signInfo.isToday ? '已签到' : '点击签到'}}</text>
+      </div>
+    </div>
+    <!-- 签到end -->
+    <div class="task">
+      <div class="tabBox">
+        <div class="tab">
+          <text @click="changeTab(1)" class="{{tabIndex == 1 ? 'active' : ''}}"
+            >新人任务</text
+          >
+          <text @click="changeTab(2)" class="{{tabIndex == 2 ? 'active' : ''}}"
+            >每日任务</text
+          >
+        </div>
+        <div class="con">
+          <div class="newP taskList" if="{{tabIndex == 1}}">
+            <task item={{list}} for="{{list in newUserTask}}"></task>
+          </div>
+          <div class="everyDay taskList" if="{{tabIndex == 2}}">
+            <task item='{{list}}' for="{{list in everyDayTask}}"></task>
+          </div>
+        </div>
+      </div>
+    </div>
+    <my-popup
+      id="popupCenter"
+      position="center"
+      title="签到规则"
+      closable="{{true}}"
+    >
+      <text class="guizContent">
+        1、每7天为一个签到周期，用户连续签满7天,完成一个签到周期，下次签到开始重新计算新的签到周期。
+        2、用户每次签到均可获得相应书券奖励，签到、分享及其他任务赠送书币的有效期均为7天，过期作废,请及时使用。
+        3、若中途漏签,则从第一天开始重新计算新的签到周期。
+      </text>
+    </my-popup>
+
+    <my-popup id="signSuccess" position="center" closable="{{true}}">
+      <div slot="header" class="signDone">
+        <image width="600" src="/assets/images/signBaoxiang.svg"></image>
+      </div>
+      <div class="signResult">
+        <text class="guizContent"> 获得签到奖励 </text>
+        <text class="obtainSpecies fc-o"> {{todayCoins}}书券 </text>
+      </div>
+    </my-popup>
+    <my-toast id="toast" icon=''></my-toast>
+  </div>
+</template>
+<import name="task" src="../../components/task.ux"></import>
+<import name="my-popup" src="apex-ui/components/popup/index"></import>
+<import name="my-toast" src="apex-ui/components/toast/index"></import>
+<script>
+import { getSignInfo, getSignAdd, getNewUserTask,getEveryDayrTask } from '../../common/api/sign'
+export default {
+  private: {
+    title: '欢迎体验快应用开发',
+    newUserTask: [],
+    signInfo: {},
+    signConfig: {},
+    day7: '',
+    todayCoins: '',
+    newPTaskList: [
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ],
+    everyDayTask: [
+    ],
+    signList: [
+      {
+        day: 1,
+        sign: true
+      },
+      {
+        day: 2,
+        sign: false
+      },
+      {
+        day: 3,
+        sign: true
+      },
+      {
+        day: 4,
+        sign: true
+      },
+      {
+        day: 5,
+        sign: true
+      },
+      {
+        day: 6,
+        sign: true
+      }
+    ],
+    tabIndex: 1
+  },
+  signing() {
+    getSignAdd().then(e => {
+      if (e.code === 1) {
+          this.$child('toast').showToast({
+            content: e.message,
+            type: 'error'
+        });
+      } else {
+        this.$child('signSuccess').show()
+        this.getSignInfo()
+      }
+    })
+  },
+  changeTab(i) {
+    this.tabIndex = i;
+  },
+  guiz() {
+    this.$child('popupCenter').show()
+  },
+  getEveryDayrTask(){
+    getEveryDayrTask().then(e => {
+      if(e){
+        this.everyDayTask = e
+      }
+    })
+  },
+  newUserTask(){
+    getNewUserTask().then(e => {
+      this.newUserTask = e
+    })
+  },
+  getSignInfo() {
+    getSignInfo().then(e => {
+      let arr = []
+      for (const key in e.signedConfig) {
+        if (Object.hasOwnProperty.call(e.signedConfig, key)) {
+          const el = e.signedConfig[key];
+          if (key.indexOf('day') >= 0) {
+            if (key == 'day7') {
+              this.day7 = el
+            } else {
+              arr.push({
+                text: key,
+                value: el
+              })
+            }
+          }
+        }
+      }
+      this.signConfig = arr
+      this.signInfo = e
+    })
+  },
+  onInit() {
+    // 获取用户签到信息
+    this.getSignInfo()
+    // 获取新人任务
+    this.newUserTask()
+    // 获取每日任务
+    this.getEveryDayrTask()
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.signResult {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .guizContent {
+    margin-top: 30px;
+    color: #333;
+  }
+  .obtainSpecies {
+    margin-bottom: 30px;
+    font-size: 36px;
+  }
+}
+.signDone {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+.guizContent {
+  padding: 0 50px 20px 50px;
+}
+.task {
+  .tabBox {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    .tab {
+      height: 96px;
+      width: 100%;
+      background-color: white;
+      display: flex;
+      justify-content: space-around;
+      border-radius: 96px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 6px;
+      text {
+        width: 50%;
+        text-align: center;
+      }
+      .active {
+        color: white;
+        background-color: #fa7b4d;
+        height: 90%;
+        border-radius: 96px;
+      }
+    }
+    .con {
+      margin-top: 20px;
+      background-color: white;
+      padding: 30px 20px;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      .taskList {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+    }
+  }
+}
+.signPage {
+  padding: 50px 36px;
+  background-color: @pageBC;
+}
+.signPage,
+.signMain {
+  display: flex;
+  flex-direction: column;
+  .signMain {
+    background-color: white;
+    padding: 30px 0;
+    border-radius: 20px;
+    position: relative;
+    .head {
+      display: flex;
+      justify-content: space-between;
+      height: 56px;
+      .left {
+        color: #333;
+        margin-left: 20px;
+        .fsc-r {
+          color: red;
+          margin: 0 6px;
+        }
+      }
+      .right {
+        background: linear-gradient(to right, #ffc53d, #fa7b4d);
+        position: absolute;
+        right: 0;
+        width: 124px;
+        height: 52px;
+        color: white;
+        text-align: center;
+        border-radius: 0 0 10px 10px;
+      }
+    }
+    .signBox {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 20px;
+      .card {
+        width: 128px;
+        height: 152px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #333;
+        background-color: #f2f2f2;
+        image {
+          width: 36px;
+        }
+        margin: 20px 11px;
+        &:nth-child(1) {
+          margin-left: 0;
+        }
+        .icon {
+          color: #fa7b4d;
+        }
+      }
+      .signed {
+        background: linear-gradient(#ffc53d, #fa7b4d);
+        text {
+          color: white;
+        }
+      }
+    }
+    .signBtnBox {
+      width: 90%;
+      margin: 0 auto;
+      background-color: #eee;
+      height: 68px;
+      border-radius: 68px;
+      margin-top: 10px;
+      text {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  }
+}
+</style>

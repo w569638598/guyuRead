@@ -1,0 +1,92 @@
+<template>
+  <div class="activityCenterPage">
+    <list>
+      <list-item type="s" class="activityList" for={{activityList}} @click="toDetail($item.id)">
+        <div class="imgBox">
+          <image src="{{$item.image}}"></image>
+          <text class="status">{{$item.activity_status == 0 ? '未开始': $item.activity_status == 1 ?'进行中' : '已结束 '}}</text>
+        </div>
+        <div class="activityContent">
+          <text class="title">{{$item.active_title}}</text>
+          <text class="timeSlot">{{$item.active_time_begin}}至{{$item.active_time_end}}</text>
+        </div>
+      </list-item>
+    </list>
+  </div>
+</template>
+
+<script>
+import router from '@system.router';
+import{getActivityList} from '../../common/api/activityCenter'
+export default {
+  private: {
+    activityList: []
+  },
+  onInit() { 
+    this.getActivityList()
+  },
+  getActivityList(){
+    getActivityList().then(e => {
+      if(e){
+        this.activityList = e
+      }
+      console.log(e,'activityCenter');
+    })
+  },
+  toDetail(id) {
+    router.push({
+      uri: 'pages/activityDetail',
+      params: {
+        id: id
+      }
+    })
+  }
+}
+</script>
+
+<style lang='less'>
+@import '../../assets/styles/style.less';
+.activityCenterPage {
+  padding: 50px 20px;
+  background-color: @pageBC;
+  .flexC();
+}
+.activityList {
+  height: 338px;
+  background-color: white;
+  border-radius: 10px;
+  margin-bottom: 36px;
+  .flexC();
+  .activityContent {
+    width: 100%;
+    height: 106px;
+    padding-left: 30px;
+    justify-content: center;
+    .flexC();
+    .title {
+      color: #333;
+    }
+    .timeSlot {
+      font-size: 24px;
+    }
+  }
+  .imgBox {
+    position: relative;
+    .status {
+      position: absolute;
+      background-color: white;
+      text-align: center;
+      right: 20px;
+      top: 20px;
+      width: 108px;
+      height: 40px;
+      border-radius: 40px;
+      font-size: 24px;
+      color: @red;
+    }
+    image {
+      width: 100%;
+    }
+  }
+}
+</style>
