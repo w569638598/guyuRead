@@ -27,20 +27,13 @@
 
 首先需要前往轻粒子官网注册, 在创建应用之后可以获得 app_key，然后需要在 `/src/assets/js/statistics.config.js` 文件中配置好自己的 app_key。
 
-### 模版说明
 
-本项目为快应用模版（含卡片，`CardDemo` 目录）。
-
-- `Demo` 页面：示例页面；
-- `DemoDetail`页面：详情页面；
-
-`CardDemo` 页面：快应用卡片示例页面，快应用卡片开发各厂商的实现方式不同，需到各个厂商的开发者平台查看具体文档。
 
 ## 如何使用
 
 推荐下载[快应用开发工具](https://www.quickapp.cn/docCenter/IDEPublicity)，可以进行扫码调试 / USB 调试，还有模拟器预览、语法提示等功能。使用方法，请参见[快应用开发工具文档](https://doc.quickapp.cn/tutorial/ide/overview.html)。
 
--  **更优雅的处理数据请求**；采用 `Promise` 对系统内置请求 `@system.fetch` 进行封装，并抛出至全局，使得可以极简的进行链式调用，并能够使用  `finally`；
+-  **更优雅的处理数据请求**；采用 `Promise` 对系统内置请求 `@system.fetch` 进行封装，并抛出至全局，使得可以极简的进行链式调用，并能够使用  `finally`；全局token存储header
 
 -  **内置样式处理方案**；「快应用」支持 `less`, `sass` 的预编译；这里采取 [dart sass](https://sass-lang.com/documentation) 方案，并内置了部分变量，以及常用混合方法，使得可以轻松开启样式编写、复用、修改等；
 
